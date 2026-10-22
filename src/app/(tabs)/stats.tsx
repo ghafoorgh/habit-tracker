@@ -1,9 +1,13 @@
-import { ScrollView, StyleSheet, Text, View } from 'react-native';
+import { ScrollView, StyleSheet, View } from 'react-native';
 
 import { Heatmap } from '../../components/Heatmap';
+import { Text } from '../../components/Text';
 import { bestStreak, completionRate, currentStreak, totalCompletions } from '../../lib/habits';
+import { toPersianDigits } from '../../lib/jalali';
 import { useHabits } from '../../lib/store';
 import { useTheme } from '../../lib/theme';
+
+const days = (n: number) => `${toPersianDigits(n)} روز`;
 
 function Stat({ label, value }: { label: string; value: string }) {
   const theme = useTheme();
@@ -23,7 +27,7 @@ export default function StatsScreen() {
     return (
       <View style={[styles.center, { backgroundColor: theme.background }]}>
         <Text style={[styles.emptyText, { color: theme.muted }]}>
-          Add a habit to see your streaks and history here.
+          یک عادت اضافه کن تا زنجیره‌ها و سابقه‌ات را اینجا ببینی.
         </Text>
       </View>
     );
@@ -35,9 +39,9 @@ export default function StatsScreen() {
   return (
     <ScrollView style={{ backgroundColor: theme.background }} contentContainerStyle={styles.content}>
       <View style={[styles.card, styles.row, { backgroundColor: theme.card, borderColor: theme.border }]}>
-        <Stat label="Habits" value={String(habits.length)} />
-        <Stat label="Check-ins" value={String(totalCheckIns)} />
-        <Stat label="Longest streak" value={`${longest}d`} />
+        <Stat label="عادت" value={toPersianDigits(habits.length)} />
+        <Stat label="بار انجام" value={toPersianDigits(totalCheckIns)} />
+        <Stat label="بلندترین زنجیره" value={days(longest)} />
       </View>
 
       {habits.map((habit) => (
@@ -46,9 +50,9 @@ export default function StatsScreen() {
             {habit.emoji} {habit.name}
           </Text>
           <View style={styles.row}>
-            <Stat label="Current" value={`${currentStreak(habit)}d`} />
-            <Stat label="Best" value={`${bestStreak(habit)}d`} />
-            <Stat label="Last 30 days" value={`${Math.round(completionRate(habit, 30) * 100)}%`} />
+            <Stat label="زنجیرهٔ فعلی" value={days(currentStreak(habit))} />
+            <Stat label="بهترین" value={days(bestStreak(habit))} />
+            <Stat label="۳۰ روز اخیر" value={`${toPersianDigits(Math.round(completionRate(habit, 30) * 100))}٪`} />
           </View>
           <Heatmap habit={habit} />
         </View>

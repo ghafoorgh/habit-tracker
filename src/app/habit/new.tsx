@@ -8,7 +8,7 @@ export default function NewHabitScreen() {
 
   return (
     <HabitForm
-      submitLabel="Add habit"
+      submitLabel="افزودن عادت"
       onSubmit={(values) => {
         addHabit(values);
         router.back();

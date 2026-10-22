@@ -1,9 +1,11 @@
-import { Link } from 'expo-router';
-import { ActivityIndicator, FlatList, Pressable, StyleSheet, Text, View } from 'react-native';
+import { router } from 'expo-router';
+import { ActivityIndicator, FlatList, Pressable, StyleSheet, View } from 'react-native';
 
 import { HabitRow } from '../../components/HabitRow';
+import { Text } from '../../components/Text';
 import { todayKey } from '../../lib/dates';
 import { isDone } from '../../lib/habits';
+import { formatJalali, toPersianDigits } from '../../lib/jalali';
 import { useHabits } from '../../lib/store';
 import { useTheme } from '../../lib/theme';
 
@@ -24,26 +26,23 @@ export default function TodayScreen() {
     return (
       <View style={[styles.center, { backgroundColor: theme.background }]}>
         <Text style={styles.bigEmoji}>🌱</Text>
-        <Text style={[styles.emptyTitle, { color: theme.text }]}>Start your first habit</Text>
+        <Text style={[styles.emptyTitle, { color: theme.text }]}>اولین عادتت را بساز</Text>
         <Text style={[styles.emptyText, { color: theme.muted }]}>
-          Small things done every day add up. Add a habit and check it off each day.
+          کارهای کوچکِ هر روز، کم‌کم بزرگ می‌شوند. یک عادت اضافه کن و هر روز تیکش را بزن.
         </Text>
-        <Link href="/habit/new" asChild>
-          <Pressable style={[styles.button, { backgroundColor: theme.primary }]}>
-            <Text style={styles.buttonText}>Add a habit</Text>
-          </Pressable>
-        </Link>
+        <Pressable
+          onPress={() => router.push('/habit/new')}
+          style={[styles.button, { backgroundColor: theme.primary }]}
+        >
+          <Text style={styles.buttonText}>افزودن عادت</Text>
+        </Pressable>
       </View>
     );
   }
 
   const doneCount = habits.filter((h) => isDone(h, today)).length;
   const progress = doneCount / habits.length;
-  const dateLabel = new Date().toLocaleDateString(undefined, {
-    weekday: 'long',
-    month: 'long',
-    day: 'numeric',
-  });
+  const dateLabel = formatJalali(new Date());
 
   return (
     <FlatList
@@ -55,7 +54,9 @@ export default function TodayScreen() {
         <View style={styles.header}>
           <Text style={[styles.date, { color: theme.muted }]}>{dateLabel}</Text>
           <Text style={[styles.summary, { color: theme.text }]}>
-            {doneCount === habits.length ? 'All done for today 🎉' : `${doneCount} of ${habits.length} done`}
+            {doneCount === habits.length
+              ? 'همهٔ عادت‌های امروز انجام شد 🎉'
+              : `${toPersianDigits(doneCount)} از ${toPersianDigits(habits.length)} انجام شد`}
           </Text>
           <View style={[styles.track, { backgroundColor: theme.empty }]}>
             <View style={[styles.fill, { width: `${progress * 100}%`, backgroundColor: theme.primary }]} />

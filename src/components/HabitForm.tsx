@@ -1,8 +1,9 @@
 import { useState } from 'react';
-import { KeyboardAvoidingView, Platform, Pressable, ScrollView, StyleSheet, Text, TextInput, View } from 'react-native';
+import { KeyboardAvoidingView, Platform, Pressable, ScrollView, StyleSheet, TextInput, View } from 'react-native';
 
 import type { Habit } from '../lib/habits';
 import { HABIT_COLORS, HABIT_EMOJIS, useTheme } from '../lib/theme';
+import { Text, fontFor } from './Text';
 
 type Values = Pick<Habit, 'name' | 'emoji' | 'color'>;
 
@@ -33,11 +34,11 @@ export function HabitForm({ initial, submitLabel, onSubmit, onDelete }: Props) {
           </View>
         </View>
 
-        <Text style={[styles.label, { color: theme.muted }]}>NAME</Text>
+        <Text style={[styles.label, { color: theme.muted }]}>نام</Text>
         <TextInput
           value={name}
           onChangeText={setName}
-          placeholder="e.g. Drink 8 glasses of water"
+          placeholder="مثلاً: روزی ۸ لیوان آب"
           placeholderTextColor={theme.muted}
           autoFocus={!initial}
           maxLength={60}
@@ -45,14 +46,14 @@ export function HabitForm({ initial, submitLabel, onSubmit, onDelete }: Props) {
           style={[styles.input, { color: theme.text, backgroundColor: theme.card, borderColor: theme.border }]}
         />
 
-        <Text style={[styles.label, { color: theme.muted }]}>ICON</Text>
+        <Text style={[styles.label, { color: theme.muted }]}>نماد</Text>
         <View style={[styles.grid, { backgroundColor: theme.card, borderColor: theme.border }]}>
           {HABIT_EMOJIS.map((e) => (
             <Pressable
               key={e}
               onPress={() => setEmoji(e)}
               style={[styles.emojiOption, e === emoji && { backgroundColor: color + '33' }]}
-              accessibilityLabel={`Icon ${e}`}
+              accessibilityLabel={`نماد ${e}`}
               accessibilityState={{ selected: e === emoji }}
             >
               <Text style={styles.emojiOptionText}>{e}</Text>
@@ -60,14 +61,14 @@ export function HabitForm({ initial, submitLabel, onSubmit, onDelete }: Props) {
           ))}
         </View>
 
-        <Text style={[styles.label, { color: theme.muted }]}>COLOR</Text>
+        <Text style={[styles.label, { color: theme.muted }]}>رنگ</Text>
         <View style={[styles.grid, { backgroundColor: theme.card, borderColor: theme.border }]}>
           {HABIT_COLORS.map((c) => (
             <Pressable
               key={c}
               onPress={() => setColor(c)}
               style={[styles.colorRing, c === color && { borderColor: c }]}
-              accessibilityLabel={`Color ${c}`}
+              accessibilityLabel={`رنگ ${c}`}
               accessibilityState={{ selected: c === color }}
             >
               <View style={[styles.colorDot, { backgroundColor: c }]} />
@@ -88,7 +89,7 @@ export function HabitForm({ initial, submitLabel, onSubmit, onDelete }: Props) {
 
         {onDelete && (
           <Pressable onPress={onDelete} style={styles.delete}>
-            <Text style={[styles.deleteText, { color: theme.danger }]}>Delete habit</Text>
+            <Text style={[styles.deleteText, { color: theme.danger }]}>حذف عادت</Text>
           </Pressable>
         )}
       </ScrollView>
@@ -101,9 +102,11 @@ const styles = StyleSheet.create({
   preview: { alignItems: 'center', marginVertical: 8 },
   previewEmoji: { width: 72, height: 72, borderRadius: 20, alignItems: 'center', justifyContent: 'center' },
   previewEmojiText: { fontSize: 36 },
-  label: { fontSize: 12, fontWeight: '600', letterSpacing: 0.5, marginTop: 20, marginBottom: 8 },
+  label: { fontSize: 13, fontWeight: '600', marginTop: 20, marginBottom: 8 },
   input: {
+    fontFamily: fontFor('400'),
     fontSize: 17,
+    writingDirection: 'rtl',
     paddingHorizontal: 14,
     paddingVertical: 12,
     borderRadius: 12,

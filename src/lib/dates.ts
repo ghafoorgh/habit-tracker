@@ -29,9 +29,3 @@ export function todayKey(): DateKey {
 export function lastNDays(count: number, end: Date = new Date()): Date[] {
   return Array.from({ length: count }, (_, i) => addDays(end, i - count + 1));
 }
-
-const WEEKDAYS = ['S', 'M', 'T', 'W', 'T', 'F', 'S'];
-
-export function weekdayInitial(date: Date): string {
-  return WEEKDAYS[date.getDay()];
-}

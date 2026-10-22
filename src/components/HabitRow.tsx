@@ -1,10 +1,12 @@
 import * as Haptics from 'expo-haptics';
 import { Link } from 'expo-router';
-import { Platform, Pressable, StyleSheet, Text, View } from 'react-native';
+import { Platform, Pressable, StyleSheet, View } from 'react-native';
 
-import { lastNDays, toDateKey, weekdayInitial, type DateKey } from '../lib/dates';
+import { lastNDays, toDateKey, type DateKey } from '../lib/dates';
 import { currentStreak, isDone, type Habit } from '../lib/habits';
+import { formatJalali, persianWeekdayInitial, toPersianDigits } from '../lib/jalali';
 import { useTheme } from '../lib/theme';
+import { Text } from './Text';
 
 type Props = {
   habit: Habit;
@@ -36,7 +38,7 @@ export function HabitRow({ habit, today, onToggle }: Props) {
     <View style={[styles.card, { backgroundColor: theme.card, borderColor: theme.border }]}>
       <View style={styles.top}>
         <Link href={{ pathname: '/habit/[id]', params: { id: habit.id } }} asChild>
-          <Pressable style={styles.info} accessibilityHint="Edit habit">
+          <Pressable style={styles.info} accessibilityHint="ویرایش عادت">
             <View style={[styles.emoji, { backgroundColor: habit.color + '22' }]}>
               <Text style={styles.emojiText}>{habit.emoji}</Text>
             </View>
@@ -45,7 +47,7 @@ export function HabitRow({ habit, today, onToggle }: Props) {
                 {habit.name}
               </Text>
               <Text style={[styles.streak, { color: theme.muted }]}>
-                {streak > 0 ? `🔥 ${streak} day streak` : 'No streak yet'}
+                {streak > 0 ? `🔥 ${toPersianDigits(streak)} روز پشت سر هم` : 'هنوز زنجیره‌ای شروع نشده'}
               </Text>
             </View>
           </Pressable>
@@ -56,7 +58,7 @@ export function HabitRow({ habit, today, onToggle }: Props) {
           hitSlop={8}
           accessibilityRole="checkbox"
           accessibilityState={{ checked: doneToday }}
-          accessibilityLabel={`Mark ${habit.name} done today`}
+          accessibilityLabel={`انجام «${habit.name}» برای امروز`}
           style={({ pressed }) => [
             styles.check,
             { borderColor: habit.color, backgroundColor: doneToday ? habit.color : 'transparent' },
@@ -78,10 +80,10 @@ export function HabitRow({ habit, today, onToggle }: Props) {
               onPress={() => toggle(key)}
               hitSlop={4}
               style={styles.day}
-              accessibilityLabel={`${key} ${done ? 'done' : 'not done'}`}
+              accessibilityLabel={`${formatJalali(date)}، ${done ? 'انجام شده' : 'انجام نشده'}`}
             >
               <Text style={[styles.dayLabel, { color: isToday ? theme.text : theme.muted }]}>
-                {weekdayInitial(date)}
+                {persianWeekdayInitial(date)}
               </Text>
               <View
                 style={[

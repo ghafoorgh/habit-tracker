@@ -1,19 +1,20 @@
 import { router, useLocalSearchParams } from 'expo-router';
-import { Alert, Platform, StyleSheet, Text, View } from 'react-native';
+import { Alert, Platform, StyleSheet, View } from 'react-native';
 
 import { HabitForm } from '../../components/HabitForm';
+import { Text } from '../../components/Text';
 import { useHabits } from '../../lib/store';
 import { useTheme } from '../../lib/theme';
 
 function confirmDelete(name: string, onConfirm: () => void) {
-  const message = `"${name}" and all its history will be removed.`;
+  const message = `«${name}» و همهٔ سابقه‌اش پاک می‌شود.`;
   if (Platform.OS === 'web') {
     if (window.confirm(message)) onConfirm();
     return;
   }
-  Alert.alert('Delete habit?', message, [
-    { text: 'Cancel', style: 'cancel' },
-    { text: 'Delete', style: 'destructive', onPress: onConfirm },
+  Alert.alert('عادت حذف شود؟', message, [
+    { text: 'انصراف', style: 'cancel' },
+    { text: 'حذف', style: 'destructive', onPress: onConfirm },
   ]);
 }
 
@@ -26,7 +27,7 @@ export default function EditHabitScreen() {
   if (!habit) {
     return (
       <View style={[styles.center, { backgroundColor: theme.background }]}>
-        <Text style={{ color: theme.muted }}>This habit no longer exists.</Text>
+        <Text style={{ color: theme.muted }}>این عادت دیگر وجود ندارد.</Text>
       </View>
     );
   }
@@ -34,7 +35,7 @@ export default function EditHabitScreen() {
   return (
     <HabitForm
       initial={habit}
-      submitLabel="Save changes"
+      submitLabel="ذخیرهٔ تغییرات"
       onSubmit={(values) => {
         updateHabit(habit.id, values);
         router.back();

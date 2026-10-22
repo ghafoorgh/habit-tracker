@@ -2,23 +2,24 @@ import { StyleSheet, View } from 'react-native';
 
 import { addDays, toDateKey } from '../lib/dates';
 import { isDone, type Habit } from '../lib/habits';
+import { daysSinceSaturday } from '../lib/jalali';
 import { useTheme } from '../lib/theme';
 
 const WEEKS = 15;
 
-/** GitHub-style grid: one column per week, Sunday on top, ending this week. */
+/** One column per week, Saturday on top, ending this week. In RTL the newest week is on the left. */
 export function Heatmap({ habit }: { habit: Habit }) {
   const theme = useTheme();
   const today = new Date();
   const todayKey = toDateKey(today);
-  const firstSunday = addDays(today, -today.getDay() - (WEEKS - 1) * 7);
+  const firstSaturday = addDays(today, -daysSinceSaturday(today) - (WEEKS - 1) * 7);
 
   return (
     <View style={styles.grid}>
       {Array.from({ length: WEEKS }, (_, week) => (
         <View key={week} style={styles.column}>
           {Array.from({ length: 7 }, (_, weekday) => {
-            const key = toDateKey(addDays(firstSunday, week * 7 + weekday));
+            const key = toDateKey(addDays(firstSaturday, week * 7 + weekday));
             const future = key > todayKey;
             return (
               <View

@@ -1,5 +1,6 @@
 import { useColorScheme } from 'react-native';
 
+// Turquoise (firouzeh) accent, as on Persian tiles.
 const light = {
   background: '#F4F5F7',
   card: '#FFFFFF',
@@ -7,7 +8,7 @@ const light = {
   muted: '#6B7280',
   border: '#E5E7EB',
   empty: '#E9EBEF',
-  primary: '#4F46E5',
+  primary: '#0F9D97',
   danger: '#DC2626',
 };
 
@@ -18,7 +19,7 @@ const dark: typeof light = {
   muted: '#9CA3AF',
   border: '#262A31',
   empty: '#22262D',
-  primary: '#818CF8',
+  primary: '#2DD4BF',
   danger: '#F87171',
 };
 
@@ -29,20 +30,21 @@ export function useTheme(): Theme {
 }
 
 export const HABIT_COLORS = [
-  '#4F46E5',
-  '#0EA5E9',
-  '#10B981',
-  '#84CC16',
-  '#F59E0B',
-  '#F97316',
-  '#EF4444',
-  '#EC4899',
-  '#A855F7',
-  '#64748B',
+  '#0F9D97', // فیروزه‌ای
+  '#1C39BB', // آبی ایرانی
+  '#F2A900', // زعفرانی
+  '#BE123C', // اناری
+  '#93C572', // پسته‌ای
+  '#F97316', // نارنجی
+  '#7C3AED', // بنفش
+  '#EC4899', // صورتی
+  '#0EA5E9', // آبی آسمانی
+  '#64748B', // خاکستری
 ];
 
 export const HABIT_EMOJIS = [
-  '💧', '🏃', '📚', '🧘', '💪', '🥗', '😴', '✍️',
-  '🎸', '🧹', '💊', '🚶', '🧠', '🌱', '☀️', '🚭',
-  '📵', '🦷', '🙏', '💰',
+  '💧', '🏃', '📚', '🧘', '💪', '🥗',
+  '😴', '✍️', '📿', '🕌', '📖', '🫖',
+  '🧹', '💊', '🚶', '🧠', '🌱', '☀️',
+  '🚭', '📵', '🦷', '🙏', '💰', '🎵',
 ];

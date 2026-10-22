@@ -1,57 +1,64 @@
-# Habit Tracker
+# عادت‌ها (Habit Tracker)
 
-A simple, offline habit tracker for iPhone and Android, built with [Expo](https://expo.dev) (SDK 58) and Expo Router.
+یک برنامهٔ سادهٔ ثبت عادت برای آیفون و اندروید، کاملاً فارسی و راست‌به‌چپ، ساخته‌شده با [Expo](https://expo.dev) (SDK 58) و Expo Router.
 
-## Features
+## امکانات
 
-- **Today view**: check off each habit for today, with a progress bar showing how many are done.
-- **Last 7 days**: tap any dot to fill in or undo a past day.
-- **Streaks**: current streak on every habit. A streak isn't broken until the day ends.
-- **Stats**: current and best streak, 30-day completion rate, and a 15-week calendar heatmap for each habit.
-- **Customise**: give each habit a name, emoji and color. Tap a habit to edit or delete it.
-- Light and dark mode, haptic feedback, and everything is saved on the device (no account needed).
+- **صفحهٔ امروز**: تاریخ شمسی امروز، تعداد عادت‌های انجام‌شده و نوار پیشرفت. هر عادت را با یک لمس تیک بزن.
+- **هفتهٔ اخیر**: هفت روز گذشته زیر هر عادت نمایش داده می‌شود. با لمس هر روز می‌توانی آن را ثبت یا لغو کنی.
+- **زنجیره‌ها**: تعداد روزهای پشت سر هم برای هر عادت. زنجیره تا پایان روز قطع نمی‌شود.
+- **آمار**: زنجیرهٔ فعلی، بهترین زنجیره، درصد انجام در ۳۰ روز اخیر و تقویم ۱۵ هفتهٔ گذشته (هفته از شنبه شروع می‌شود).
+- **شخصی‌سازی**: نام، نماد (از جمله 🕌 📿 📖 🫖) و رنگ (فیروزه‌ای، آبی ایرانی، زعفرانی، اناری، پسته‌ای و …).
+- تقویم هجری شمسی، اعداد فارسی، فونت وزیرمتن، حالت روشن و تاریک، لرزش هنگام تیک زدن.
+- همهٔ اطلاعات روی خود گوشی ذخیره می‌شود و به حساب کاربری نیازی نیست.
 
-## Run it on your phone
+## اجرا روی گوشی
 
-1. Install **Expo Go** from the App Store or Google Play.
-2. On your computer (Node 20+):
-   ```bash
-   npm install
-   npx expo start
-   ```
-3. Scan the QR code with the iPhone Camera app, or from inside Expo Go on Android.
+۱. برنامهٔ **Expo Go** را از App Store یا Google Play نصب کن.
 
-## Build a standalone app
-
-Use [EAS Build](https://docs.expo.dev/build/introduction/). You don't need Xcode or Android Studio:
+۲. روی کامپیوتر (Node نسخهٔ ۲۰ یا بالاتر):
 
 ```bash
-npx eas-cli@latest build --platform ios      # or: --platform android / all
+npm install
+npx expo start
 ```
 
-The bundle identifier and package name are set to `com.ghafoorgh.habittracker` in `app.json`. Change them before publishing if you like.
+۳. کد QR را در آیفون با دوربین و در اندروید از داخل Expo Go اسکن کن.
 
-## Development
+> اگر بار اول صفحه چپ‌به‌راست نمایش داده شد، برنامه را یک بار کامل ببند و دوباره باز کن. چیدمان راست‌به‌چپ از اجرای بعدی اعمال می‌شود.
+
+## ساخت نسخهٔ نصبی
+
+با [EAS Build](https://docs.expo.dev/build/introduction/) و بدون نیاز به Xcode یا Android Studio:
 
 ```bash
-npm run typecheck   # TypeScript
-npm test            # streak / date logic tests (Node's built-in test runner)
+npx eas-cli@latest build --platform ios      # یا: --platform android / all
 ```
 
-### Project layout
+شناسهٔ برنامه در `app.json` برابر `com.ghafoorgh.habittracker` است.
+
+## توسعه
+
+```bash
+npm run typecheck   # بررسی TypeScript
+npm test            # تست‌های تقویم شمسی و محاسبهٔ زنجیره
+```
+
+### ساختار پروژه
 
 ```
 src/
-  app/                 Expo Router screens
-    _layout.tsx        root stack + data provider
-    (tabs)/index.tsx   Today
-    (tabs)/stats.tsx   Stats
-    habit/new.tsx      add habit (modal)
-    habit/[id].tsx     edit / delete habit (modal)
-  components/          HabitRow, HabitForm, Heatmap, tab icons
+  app/                 صفحه‌ها (Expo Router)
+    _layout.tsx        فونت، راست‌به‌چپ و ذخیرهٔ داده
+    (tabs)/index.tsx   امروز
+    (tabs)/stats.tsx   آمار
+    habit/new.tsx      عادت جدید
+    habit/[id].tsx     ویرایش / حذف عادت
+  components/          HabitRow، HabitForm، Heatmap، Text (فونت وزیرمتن)
   lib/
-    dates.ts           local-date helpers
-    habits.ts          streak & completion logic (pure, unit-tested)
-    store.tsx          habits state + AsyncStorage persistence
-    theme.ts           colors, habit palette, emoji list
+    jalali.ts          تبدیل تاریخ میلادی به شمسی، نام ماه‌ها و روزها، اعداد فارسی
+    dates.ts           توابع کمکی تاریخ
+    habits.ts          محاسبهٔ زنجیره و درصد انجام
+    store.tsx          وضعیت عادت‌ها و ذخیره در AsyncStorage
+    theme.ts           رنگ‌ها و نمادها
 ```
