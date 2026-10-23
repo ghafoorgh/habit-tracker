@@ -1,0 +1,323 @@
+<!doctype html>
+<html lang="fa" dir="rtl">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>پنل ایجنت املاک</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Vazirmatn:wght@400;500;700&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #f5f6f8; --card: #fff; --text: #1d2330; --muted: #6b7280; --line: #e5e7eb;
+    --accent: #0f766e; --accent-soft: #e6f4f2; --danger: #b42318; --warn: #b54708; --in: #f1f5f9; --out: #dcf3ec;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root { --bg: #11151c; --card: #1a1f29; --text: #e6e8ec; --muted: #9aa3b2; --line: #2a3140;
+      --accent: #2dd4bf; --accent-soft: #123a36; --danger: #f97066; --warn: #fdb022; --in: #232a36; --out: #133b33; }
+  }
+  * { box-sizing: border-box; }
+  body { margin: 0; font-family: Vazirmatn, Tahoma, sans-serif; background: var(--bg); color: var(--text); font-size: 15px; }
+  header { background: var(--card); border-bottom: 1px solid var(--line); padding: 12px 16px; display: flex; gap: 16px; align-items: center; flex-wrap: wrap; }
+  header h1 { font-size: 17px; margin: 0; }
+  nav { display: flex; gap: 4px; }
+  nav button { background: none; border: 0; padding: 8px 12px; border-radius: 8px; color: var(--muted); font: inherit; cursor: pointer; }
+  nav button.active { background: var(--accent-soft); color: var(--accent); font-weight: 700; }
+  .pill { font-size: 12px; padding: 2px 8px; border-radius: 99px; background: var(--line); color: var(--muted); white-space: nowrap; }
+  .pill.ok { background: var(--accent-soft); color: var(--accent); }
+  .pill.bad { background: #fde8e7; color: var(--danger); }
+  .conn { margin-inline-start: auto; display: flex; gap: 6px; flex-wrap: wrap; }
+  main { max-width: 1000px; margin: 0 auto; padding: 16px; }
+  .card { background: var(--card); border: 1px solid var(--line); border-radius: 12px; padding: 14px; margin-bottom: 12px; }
+  .row { display: flex; gap: 8px; align-items: center; flex-wrap: wrap; }
+  .grow { flex: 1; min-width: 0; }
+  .muted { color: var(--muted); font-size: 13px; }
+  textarea, input, select { width: 100%; font: inherit; color: var(--text); background: var(--bg); border: 1px solid var(--line); border-radius: 8px; padding: 8px 10px; }
+  textarea { min-height: 80px; resize: vertical; line-height: 1.8; }
+  button.btn { font: inherit; border: 1px solid var(--line); background: var(--card); color: var(--text); border-radius: 8px; padding: 7px 14px; cursor: pointer; white-space: nowrap; }
+  button.primary { background: var(--accent); border-color: var(--accent); color: #fff; }
+  button.danger { color: var(--danger); }
+  button:disabled { opacity: .5; cursor: default; }
+  .quote { background: var(--in); border-radius: 8px; padding: 8px 10px; margin: 8px 0; font-size: 14px; white-space: pre-wrap; }
+  .stats { display: grid; grid-template-columns: repeat(auto-fill, minmax(130px, 1fr)); gap: 8px; }
+  .stat { background: var(--card); border: 1px solid var(--line); border-radius: 10px; padding: 10px; cursor: pointer; }
+  .stat b { display: block; font-size: 22px; }
+  table { width: 100%; border-collapse: collapse; }
+  td, th { text-align: right; padding: 8px 6px; border-bottom: 1px solid var(--line); vertical-align: top; }
+  tr.click { cursor: pointer; } tr.click:hover { background: var(--bg); }
+  .ellipsis { max-width: 260px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  .drawer { position: fixed; inset: 0 auto 0 0; width: min(520px, 100%); background: var(--card); border-inline-start: 1px solid var(--line); box-shadow: 0 0 30px rgba(0,0,0,.15); display: none; flex-direction: column; z-index: 10; }
+  .drawer.open { display: flex; }
+  .drawer .head { padding: 14px; border-bottom: 1px solid var(--line); }
+  .thread { flex: 1; overflow-y: auto; padding: 14px; display: flex; flex-direction: column; gap: 8px; }
+  .bubble { max-width: 85%; padding: 8px 12px; border-radius: 12px; line-height: 1.8; }
+  .bubble .txt { white-space: pre-wrap; }
+  .bubble.in { background: var(--in); align-self: flex-start; }
+  .bubble.out { background: var(--out); align-self: flex-end; }
+  .bubble .meta { font-size: 11px; color: var(--muted); margin-top: 2px; }
+  .drawer .foot { padding: 12px 14px; border-top: 1px solid var(--line); display: grid; gap: 8px; }
+  .qr img { width: 260px; max-width: 100%; background: #fff; padding: 8px; border-radius: 8px; }
+  .hidden { display: none !important; }
+  #toast { position: fixed; bottom: 16px; left: 50%; transform: translateX(-50%); background: var(--text); color: var(--bg); padding: 8px 16px; border-radius: 8px; display: none; z-index: 20; }
+  @media (max-width: 640px) { .hide-sm { display: none; } }
+</style>
+</head>
+<body>
+<header>
+  <h1>ایجنت املاک</h1>
+  <nav>
+    <button data-tab="queue" class="active">صف تأیید <span id="pendingCount" class="pill">0</span></button>
+    <button data-tab="contacts">مخاطبین</button>
+    <button data-tab="setup">اتصال و دیتابیس</button>
+  </nav>
+  <div class="conn" id="conn"></div>
+</header>
+
+<main>
+  <section id="tab-queue">
+    <p class="muted" id="limitsLine"></p>
+    <div id="queue"></div>
+  </section>
+
+  <section id="tab-contacts" class="hidden">
+    <div class="stats" id="stats"></div>
+    <div class="card" style="margin-top:12px">
+      <div class="row">
+        <input id="search" class="grow" placeholder="جستجو: نام، شماره، آدرس، اینستاگرام">
+        <select id="statusFilter" style="width:auto"></select>
+      </div>
+      <div style="overflow-x:auto"><table>
+        <thead><tr><th>نام</th><th>شماره / اینستاگرام</th><th>وضعیت</th><th class="hide-sm">جزئیات ملک</th></tr></thead>
+        <tbody id="contactsBody"></tbody>
+      </table></div>
+    </div>
+  </section>
+
+  <section id="tab-setup" class="hidden">
+    <div class="card">
+      <h3>واتس‌اپ</h3>
+      <div id="waBox" class="muted">در حال بررسی...</div>
+    </div>
+    <div class="card">
+      <h3>وارد کردن دیتابیس (Excel / CSV)</h3>
+      <p class="muted">ستون‌ها: <b>نام</b>، <b>شماره</b> (الزامی)، <b>آدرس</b>، <b>نوع ملک</b>، <b>توضیحات</b>. شماره‌های تکراری به‌روزرسانی می‌شوند.</p>
+      <div class="row"><input type="file" id="file" accept=".xlsx,.xls,.csv" class="grow"><button class="btn primary" id="importBtn">وارد کن</button></div>
+      <p id="importResult" class="muted"></p>
+    </div>
+    <div class="card">
+      <h3>ساخت پیام اول برای مالکان</h3>
+      <p class="muted">ایجنت برای مخاطبان «جدید» پیام اول را می‌نویسد. هیچ پیامی بدون تأیید شما در «صف تأیید» ارسال نمی‌شود.</p>
+      <div class="row"><input type="number" id="outreachCount" value="10" min="1" max="100" style="width:100px"><button class="btn primary" id="outreachBtn">ساخت پیش‌نویس</button></div>
+      <p id="outreachResult" class="muted"></p>
+    </div>
+    <div class="card">
+      <h3>خروجی</h3>
+      <a href="/api/export"><button class="btn">دانلود Excel مخاطبین و نتایج</button></a>
+    </div>
+  </section>
+</main>
+
+<aside class="drawer" id="drawer">
+  <div class="head">
+    <div class="row"><b id="dName" class="grow"></b><button class="btn" id="dClose">✕</button></div>
+    <div class="muted" id="dInfo"></div>
+    <div class="row" style="margin-top:8px">
+      <select id="dStatus" class="grow"></select>
+      <label class="row muted" style="gap:4px"><input type="checkbox" id="dPause" style="width:auto">خودم جواب می‌دهم (توقف ایجنت)</label>
+    </div>
+    <div class="quote hidden" id="dSummary"></div>
+    <textarea id="dNotes" placeholder="یادداشت شما (ایجنت هم می‌بیند)" style="min-height:50px;margin-top:8px"></textarea>
+  </div>
+  <div class="thread" id="dThread"></div>
+  <div class="foot">
+    <textarea id="dMsg" placeholder="پیام دستی شما (بدون نیاز به تأیید ارسال می‌شود)" style="min-height:60px"></textarea>
+    <div class="row"><button class="btn primary" id="dSend">ارسال</button><button class="btn" id="dDraft">پیش‌نویس با ایجنت</button><button class="btn" id="dSaveNotes">ذخیره یادداشت</button></div>
+  </div>
+</aside>
+<div id="toast"></div>
+
+<script>
+const $ = (s) => document.querySelector(s);
+const esc = (s) => String(s ?? '').replace(/[&<>"']/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
+let STATUSES = {};
+let current = null;
+
+async function api(path, opts = {}) {
+  const res = await fetch('/api' + path, { headers: { 'Content-Type': 'application/json' }, ...opts });
+  const data = res.headers.get('content-type')?.includes('json') ? await res.json() : null;
+  if (!res.ok) throw new Error(data?.error || res.statusText);
+  return data;
+}
+function toast(t) { const el = $('#toast'); el.textContent = t; el.style.display = 'block'; clearTimeout(el._t); el._t = setTimeout(() => el.style.display = 'none', 2500); }
+
+document.querySelectorAll('nav button').forEach((b) => b.onclick = () => showTab(b.dataset.tab));
+function showTab(tab) {
+  document.querySelectorAll('nav button').forEach((b) => b.classList.toggle('active', b.dataset.tab === tab));
+  ['queue', 'contacts', 'setup'].forEach((t) => $('#tab-' + t).classList.toggle('hidden', t !== tab));
+  if (tab === 'contacts') loadContacts();
+}
+
+async function loadStatus() {
+  const s = await api('/status');
+  STATUSES = s.statuses;
+  $('#pendingCount').textContent = s.pending;
+  const conn = [];
+  for (const [name, st] of Object.entries(s.channels)) {
+    conn.push(`<span class="pill ${st.ready ? 'ok' : 'bad'}">${name === 'whatsapp' ? 'واتس‌اپ' : 'اینستاگرام'}: ${st.ready ? 'متصل' : 'قطع'}</span>`);
+  }
+  $('#conn').innerHTML = conn.join('');
+  $('#limitsLine').textContent = `پیام اول ارسال‌شده امروز: ${s.outreachSentToday} از ${s.limits.daily} · ساعت ارسال ${s.limits.hours[0]} تا ${s.limits.hours[1]} · فاصله بین پیام‌ها ${s.limits.delay[0]}–${s.limits.delay[1]} ثانیه`;
+
+  const wa = s.channels.whatsapp;
+  $('#waBox').innerHTML = !wa ? 'واتس‌اپ غیرفعال است (WHATSAPP_ENABLED=false).'
+    : wa.ready ? `✅ متصل به شماره ${esc(wa.account)}`
+    : wa.qr ? `<div class="qr"><p>در گوشی: واتس‌اپ ← دستگاه‌های متصل ← اتصال دستگاه، و این کد را اسکن کنید:</p><img src="${wa.qr}"></div>`
+    : 'در حال راه‌اندازی واتس‌اپ...';
+
+  const total = Object.values(s.stats).reduce((a, b) => a + b, 0);
+  $('#stats').innerHTML = `<div class="stat" data-s=""><b>${total}</b>همه</div>` +
+    Object.entries(STATUSES).map(([k, v]) => `<div class="stat" data-s="${k}"><b>${s.stats[k] || 0}</b>${v}</div>`).join('');
+  document.querySelectorAll('.stat').forEach((el) => el.onclick = () => { $('#statusFilter').value = el.dataset.s; loadContacts(); });
+  const opts = Object.entries(STATUSES).map(([k, v]) => `<option value="${k}">${v}</option>`).join('');
+  if (!$('#statusFilter').options.length) $('#statusFilter').innerHTML = `<option value="">همه وضعیت‌ها</option>` + opts;
+  if (!$('#dStatus').options.length) $('#dStatus').innerHTML = opts;
+}
+
+async function loadQueue() {
+  const items = await api('/queue');
+  const box = $('#queue');
+  const editing = document.activeElement?.closest?.('[data-id]')?.dataset.id;
+  if (editing) return; // don't wipe a draft you are editing
+  if (!items.length) { box.innerHTML = '<div class="card muted">صف خالی است. پیام‌های جدید ایجنت اینجا برای تأیید شما می‌آیند.</div>'; return; }
+  box.innerHTML = items.map((m) => `
+    <div class="card" data-id="${m.id}">
+      <div class="row">
+        <b class="grow"><a href="#" data-open="${m.contact_id}">${esc(m.name || m.phone || '@' + m.instagram_username)}</a></b>
+        <span class="pill">${m.channel === 'whatsapp' ? 'واتس‌اپ' : 'اینستاگرام'}</span>
+        <span class="pill">${m.kind === 'outreach' ? 'پیام اول' : 'پاسخ'}</span>
+        <span class="pill">${esc(STATUSES[m.contact_status] || m.contact_status)}</span>
+      </div>
+      <div class="muted">${esc(m.phone || '')}</div>
+      ${m.in_reply_to ? `<div class="quote">${esc(m.in_reply_to)}</div>` : ''}
+      <textarea>${esc(m.body)}</textarea>
+      <div class="row" style="margin-top:8px">
+        <button class="btn primary" data-act="approve">تأیید و ارسال</button>
+        <button class="btn" data-act="redraft">بازنویسی</button>
+        <button class="btn danger" data-act="reject">رد</button>
+      </div>
+    </div>`).join('');
+}
+
+$('#queue').addEventListener('click', async (e) => {
+  const open = e.target.closest('[data-open]');
+  if (open) { e.preventDefault(); return openContact(open.dataset.open); }
+  const btn = e.target.closest('button[data-act]');
+  if (!btn) return;
+  const card = btn.closest('[data-id]');
+  const id = card.dataset.id;
+  btn.disabled = true;
+  try {
+    if (btn.dataset.act === 'approve') {
+      await api(`/messages/${id}/approve`, { method: 'POST', body: JSON.stringify({ body: card.querySelector('textarea').value }) });
+      toast('تأیید شد؛ در صف ارسال قرار گرفت');
+    } else if (btn.dataset.act === 'reject') {
+      await api(`/messages/${id}/reject`, { method: 'POST' });
+    } else {
+      toast('در حال بازنویسی...');
+      await api(`/messages/${id}/redraft`, { method: 'POST' });
+    }
+    card.remove();
+    refresh();
+  } catch (err) { toast(err.message); btn.disabled = false; }
+});
+
+async function loadContacts() {
+  const q = encodeURIComponent($('#search').value.trim());
+  const st = $('#statusFilter').value;
+  const rows = await api(`/contacts?q=${q}&status=${st}`);
+  $('#contactsBody').innerHTML = rows.map((c) => `
+    <tr class="click" data-open="${c.id}">
+      <td>${esc(c.name || '—')}${c.ai_paused ? ' <span class="pill">دستی</span>' : ''}</td>
+      <td dir="ltr" style="text-align:right">${esc(c.phone || (c.instagram_username ? '@' + c.instagram_username : ''))}</td>
+      <td><span class="pill">${esc(STATUSES[c.status] || c.status)}</span></td>
+      <td class="hide-sm ellipsis">${esc(c.ai_summary || c.address || '')}</td>
+    </tr>`).join('') || '<tr><td colspan="4" class="muted">مخاطبی پیدا نشد</td></tr>';
+}
+$('#contactsBody').onclick = (e) => { const tr = e.target.closest('[data-open]'); if (tr) openContact(tr.dataset.open); };
+let searchT; $('#search').oninput = () => { clearTimeout(searchT); searchT = setTimeout(loadContacts, 300); };
+$('#statusFilter').onchange = loadContacts;
+
+const MSG_STATUS = { pending: 'منتظر تأیید', approved: 'در صف ارسال', sending: 'در حال ارسال', sent: 'ارسال شد', rejected: 'رد شد', failed: 'ناموفق' };
+async function openContact(id) {
+  const { contact: c, messages } = await api('/contacts/' + id);
+  current = c;
+  $('#drawer').classList.add('open');
+  $('#dName').textContent = c.name || c.phone || '@' + c.instagram_username;
+  $('#dInfo').textContent = [c.phone, c.instagram_username && '@' + c.instagram_username, c.address, c.property_type].filter(Boolean).join(' · ');
+  $('#dStatus').value = c.status;
+  $('#dPause').checked = !!c.ai_paused;
+  $('#dNotes').value = c.notes || '';
+  $('#dSummary').classList.toggle('hidden', !c.ai_summary);
+  $('#dSummary').textContent = c.ai_summary ? 'جزئیات ملک: ' + c.ai_summary : '';
+  const th = $('#dThread');
+  th.innerHTML = messages.filter((m) => !(m.status === 'rejected' && m.error === 'superseded')).map((m) => `
+    <div class="bubble ${m.direction}"><div class="txt">${esc(m.body)}</div>
+      <div class="meta">${m.created_at}${m.direction === 'out' ? ' · ' + (MSG_STATUS[m.status] || m.status) : ''}${m.error ? ' · ' + esc(m.error) : ''}
+      ${m.status === 'failed' ? ` · <a href="#" data-retry="${m.id}">ارسال دوباره</a>` : ''}</div>
+    </div>`).join('') || '<p class="muted">هنوز پیامی نیست</p>';
+  th.scrollTop = th.scrollHeight;
+}
+$('#dThread').onclick = async (e) => {
+  const r = e.target.closest('[data-retry]');
+  if (!r) return;
+  e.preventDefault();
+  try { await api(`/messages/${r.dataset.retry}/retry`, { method: 'POST' }); openContact(current.id); } catch (err) { toast(err.message); }
+};
+$('#dClose').onclick = () => { $('#drawer').classList.remove('open'); current = null; };
+const patch = (body) => api('/contacts/' + current.id, { method: 'PATCH', body: JSON.stringify(body) });
+$('#dStatus').onchange = async () => { await patch({ status: $('#dStatus').value }); toast('وضعیت ذخیره شد'); refresh(); };
+$('#dPause').onchange = async () => { await patch({ ai_paused: $('#dPause').checked }); toast($('#dPause').checked ? 'ایجنت برای این مخاطب متوقف شد' : 'ایجنت دوباره فعال شد'); };
+$('#dSaveNotes').onclick = async () => { await patch({ notes: $('#dNotes').value }); toast('یادداشت ذخیره شد'); };
+$('#dSend').onclick = async () => {
+  const body = $('#dMsg').value.trim();
+  if (!body) return;
+  try { await api(`/contacts/${current.id}/send`, { method: 'POST', body: JSON.stringify({ body }) }); $('#dMsg').value = ''; toast('در صف ارسال'); openContact(current.id); }
+  catch (err) { toast(err.message); }
+};
+$('#dDraft').onclick = async (e) => {
+  e.target.disabled = true; toast('ایجنت در حال نوشتن...');
+  try { await api(`/contacts/${current.id}/draft`, { method: 'POST' }); toast('پیش‌نویس به صف تأیید اضافه شد'); refresh(); openContact(current.id); }
+  catch (err) { toast(err.message); }
+  e.target.disabled = false;
+};
+
+$('#importBtn').onclick = async () => {
+  const f = $('#file').files[0];
+  if (!f) return toast('فایل را انتخاب کنید');
+  try {
+    const res = await fetch('/api/import', { method: 'POST', body: f, headers: { 'Content-Type': 'application/octet-stream' } });
+    const r = await res.json();
+    if (!res.ok) throw new Error(r.error);
+    $('#importResult').innerHTML = `کل: ${r.total} · جدید: ${r.created} · به‌روزرسانی: ${r.updated} · ردشده: ${r.skipped.length}` +
+      (r.skipped.length ? '<br>' + r.skipped.slice(0, 20).map((s) => `ردیف ${s.row}: ${esc(s.reason)}`).join('<br>') : '');
+    refresh();
+  } catch (err) { toast(err.message); }
+};
+$('#outreachBtn').onclick = async (e) => {
+  e.target.disabled = true;
+  $('#outreachResult').textContent = 'ایجنت در حال نوشتن پیام‌ها... (چند ثانیه برای هر مخاطب)';
+  try {
+    const r = await api('/outreach', { method: 'POST', body: JSON.stringify({ count: $('#outreachCount').value }) });
+    $('#outreachResult').textContent = `${r.drafted} پیش‌نویس ساخته شد${r.failed ? ` · ${r.failed} ناموفق` : ''}. برای تأیید به «صف تأیید» بروید.`;
+    refresh();
+  } catch (err) { $('#outreachResult').textContent = err.message; }
+  e.target.disabled = false;
+};
+
+async function refresh() {
+  try { await loadStatus(); await loadQueue(); } catch (e) { console.error(e); }
+}
+refresh();
+setInterval(refresh, 5000);
+</script>
+</body>
+</html>
