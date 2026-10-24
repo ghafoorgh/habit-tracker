@@ -2,7 +2,7 @@ import { Link, Tabs } from 'expo-router';
 import { Pressable, StyleSheet } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
-import { StatsIcon, TodayIcon } from '../../components/TabIcons';
+import { AdvisorIcon, StatsIcon, TodayIcon } from '../../components/TabIcons';
 import { Text } from '../../components/Text';
 import { useTheme } from '../../lib/theme';
 
@@ -39,6 +39,10 @@ export default function TabsLayout() {
       <Tabs.Screen
         name="stats"
         options={{ title: 'آمار', tabBarIcon: ({ color }) => <StatsIcon color={color} /> }}
+      />
+      <Tabs.Screen
+        name="advisor"
+        options={{ title: 'مشاور', tabBarIcon: ({ color }) => <AdvisorIcon color={color} /> }}
       />
     </Tabs>
   );
