@@ -43,6 +43,13 @@ CREATE INDEX IF NOT EXISTS idx_messages_contact ON messages(contact_id, id);
 CREATE INDEX IF NOT EXISTS idx_messages_status  ON messages(status);
 `);
 
+// Columns added after the first release.
+const messageCols = db.prepare('PRAGMA table_info(messages)').all().map((c) => c.name);
+// options: JSON {question, choices:[{title, intent?}]} sent as a WhatsApp poll / Instagram quick replies
+if (!messageCols.includes('options')) db.exec('ALTER TABLE messages ADD COLUMN options TEXT');
+// alternatives: JSON array of other wordings the AI suggested, for you to pick from in the panel
+if (!messageCols.includes('alternatives')) db.exec('ALTER TABLE messages ADD COLUMN alternatives TEXT');
+
 export const STATUSES = {
   new: 'جدید',
   drafted: 'پیش‌نویس آماده',
@@ -115,9 +122,10 @@ export const Contacts = {
 export const Messages = {
   get: (id) => db.prepare('SELECT * FROM messages WHERE id = ?').get(id),
 
-  add({ contact_id, channel, direction, kind = 'reply', body, status }) {
-    const r = db.prepare(`INSERT INTO messages (contact_id, channel, direction, kind, body, status)
-        VALUES (?, ?, ?, ?, ?, ?)`).run(contact_id, channel, direction, kind, body, status);
+  add({ contact_id, channel, direction, kind = 'reply', body, status, options = null, alternatives = null }) {
+    const r = db.prepare(`INSERT INTO messages (contact_id, channel, direction, kind, body, status, options, alternatives)
+        VALUES (?, ?, ?, ?, ?, ?, ?, ?)`).run(contact_id, channel, direction, kind, body, status,
+      options ? JSON.stringify(options) : null, alternatives?.length ? JSON.stringify(alternatives) : null);
     db.prepare(`UPDATE contacts SET updated_at = datetime('now') WHERE id = ?`).run(contact_id);
     return this.get(r.lastInsertRowid);
   },
@@ -147,6 +155,19 @@ export const Messages = {
     db.prepare(`UPDATE messages SET status = @status, error = @error, body = COALESCE(@body, body),
         sent_at = CASE WHEN @status = 'sent' THEN datetime('now') ELSE sent_at END WHERE id = @id`)
       .run({ id, status, error: extra.error ?? null, body: extra.body ?? null });
+    if (extra.options !== undefined) {
+      db.prepare('UPDATE messages SET options = ? WHERE id = ?').run(extra.options ? JSON.stringify(extra.options) : null, id);
+    }
+    if (extra.alternatives !== undefined) {
+      db.prepare('UPDATE messages SET alternatives = ? WHERE id = ?').run(extra.alternatives?.length ? JSON.stringify(extra.alternatives) : null, id);
+    }
+  },
+
+  // The options of the last message we sent this contact (to understand "2" or a tapped poll option).
+  lastSentOptions(contact_id) {
+    const row = db.prepare(`SELECT options FROM messages WHERE contact_id = ? AND direction = 'out'
+        AND status = 'sent' AND options IS NOT NULL ORDER BY id DESC LIMIT 1`).get(contact_id);
+    return row ? JSON.parse(row.options) : null;
   },
 
   // Replies first (people are waiting), then outreach; outreach is skipped while it is throttled.

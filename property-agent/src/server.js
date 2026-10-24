@@ -14,6 +14,19 @@ function basicAuth(req, res, next) {
   res.set('WWW-Authenticate', 'Basic realm="property-agent"').status(401).send('Authentication required');
 }
 
+// Options edited in the panel: keep each choice's intent by position, drop empty titles, null = no poll.
+function cleanOptions(input, storedJson) {
+  if (!input || !Array.isArray(input.choices)) return null;
+  const stored = storedJson ? JSON.parse(storedJson) : { choices: [] };
+  const choices = input.choices
+    .map((t, i) => ({ title: String(t).trim().slice(0, 100), intent: stored.choices[i]?.intent }))
+    .filter((c) => c.title)
+    .slice(0, 12);
+  if (choices.length < 2) return null;
+  const question = typeof input.question === 'string' && input.question.trim() ? input.question.trim().slice(0, 255) : stored.question ?? null;
+  return { question, choices };
+}
+
 const wrap = (fn) => (req, res) => Promise.resolve(fn(req, res)).catch((e) => {
   console.error('[api]', e);
   res.status(500).json({ error: e.message });
@@ -48,7 +61,9 @@ export function mountAdmin(app) {
     const msg = Messages.get(req.params.id);
     if (!msg || msg.status !== 'pending') return res.status(409).json({ error: 'پیام در صف تأیید نیست' });
     const body = typeof req.body.body === 'string' && req.body.body.trim() ? req.body.body.trim() : null;
-    Messages.setStatus(msg.id, 'approved', { body });
+    const extra = { body };
+    if (req.body.options !== undefined) extra.options = cleanOptions(req.body.options, msg.options);
+    Messages.setStatus(msg.id, 'approved', extra);
     res.json({ ok: true });
   });
 
@@ -64,8 +79,8 @@ export function mountAdmin(app) {
     const msg = Messages.get(req.params.id);
     if (!msg || msg.status !== 'pending') return res.status(409).json({ error: 'پیام در صف تأیید نیست' });
     if (msg.kind === 'outreach') {
-      const body = await draftOutreach(Contacts.get(msg.contact_id));
-      Messages.setStatus(msg.id, 'pending', { body });
+      const [body, ...alternatives] = await draftOutreach(Contacts.get(msg.contact_id));
+      Messages.setStatus(msg.id, 'pending', { body, alternatives });
     } else {
       await draftReplyFor(msg.contact_id, msg.channel);
     }

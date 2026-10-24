@@ -45,7 +45,7 @@ export async function runSender() {
 
       Messages.setStatus(msg.id, 'sending');
       try {
-        await channel.send(contact, msg.body);
+        await channel.send(contact, msg.body, msg.options ? JSON.parse(msg.options) : null);
         Messages.setStatus(msg.id, 'sent');
         if (msg.kind === 'outreach' && contact.status === 'drafted') Contacts.update(contact.id, { status: 'contacted' });
         console.log(`[sender] sent #${msg.id} to contact ${contact.id} via ${msg.channel}`);

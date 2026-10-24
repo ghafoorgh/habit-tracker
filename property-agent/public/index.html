@@ -57,6 +57,13 @@
   .drawer .foot { padding: 12px 14px; border-top: 1px solid var(--line); display: grid; gap: 8px; }
   .qr img { width: 260px; max-width: 100%; background: #fff; padding: 8px; border-radius: 8px; }
   .hidden { display: none !important; }
+  .alts { display: flex; gap: 6px; flex-wrap: wrap; margin: 8px 0 4px; }
+  .alts button { font: inherit; font-size: 13px; border: 1px solid var(--line); background: var(--bg); color: var(--text); border-radius: 99px; padding: 3px 12px; cursor: pointer; }
+  .alts button.on { background: var(--accent-soft); border-color: var(--accent); color: var(--accent); font-weight: 700; }
+  .opts { margin-top: 8px; border: 1px dashed var(--line); border-radius: 8px; padding: 8px 10px; }
+  .opts .choices { display: grid; grid-template-columns: repeat(auto-fill, minmax(170px, 1fr)); gap: 6px; margin-top: 6px; }
+  .opts.off .choices, .opts.off .q { display: none; }
+  .opts .q { margin-top: 6px; }
   #toast { position: fixed; bottom: 16px; left: 50%; transform: translateX(-50%); background: var(--text); color: var(--bg); padding: 8px 16px; border-radius: 8px; display: none; z-index: 20; }
   @media (max-width: 640px) { .hide-sm { display: none; } }
 </style>
@@ -129,7 +136,7 @@
   </div>
   <div class="thread" id="dThread"></div>
   <div class="foot">
-    <textarea id="dMsg" placeholder="پیام دستی شما (بدون نیاز به تأیید ارسال می‌شود)" style="min-height:60px"></textarea>
+    <textarea id="dMsg" dir="auto" placeholder="پیام دستی شما (بدون نیاز به تأیید ارسال می‌شود)" style="min-height:60px"></textarea>
     <div class="row"><button class="btn primary" id="dSend">ارسال</button><button class="btn" id="dDraft">پیش‌نویس با ایجنت</button><button class="btn" id="dSaveNotes">ذخیره یادداشت</button></div>
   </div>
 </aside>
@@ -182,14 +189,29 @@ async function loadStatus() {
   if (!$('#dStatus').options.length) $('#dStatus').innerHTML = opts;
 }
 
+let queueSig = '';
+// "[selected option] X" is how a tapped poll option is stored; show it readably.
+const showMsg = (t) => esc(t).replace(/^\[selected option\] /, '✅ گزینهٔ انتخاب‌شده: ');
+const hash = (t) => String([...t].reduce((a, c) => (a * 31 + c.charCodeAt(0)) | 0, 0));
 async function loadQueue() {
   const items = await api('/queue');
   const box = $('#queue');
-  const editing = document.activeElement?.closest?.('[data-id]')?.dataset.id;
-  if (editing) return; // don't wipe a draft you are editing
+  const sig = items.map((m) => m.id + ':' + hash(m.body)).join(',');
+  if (sig === queueSig) return; // nothing new: keep the cards (and anything you are editing) as they are
+  queueSig = sig;
   if (!items.length) { box.innerHTML = '<div class="card muted">صف خالی است. پیام‌های جدید ایجنت اینجا برای تأیید شما می‌آیند.</div>'; return; }
-  box.innerHTML = items.map((m) => `
-    <div class="card" data-id="${m.id}">
+  const kept = new Map([...box.querySelectorAll('[data-id]')].map((el) => [el.dataset.id, el]));
+  box.innerHTML = '';
+  for (const m of items) box.appendChild(kept.get(String(m.id)) && kept.get(String(m.id)).dataset.h === hash(m.body) ? kept.get(String(m.id)) : queueCard(m));
+}
+
+function queueCard(m) {
+  const versions = [m.body, ...(m.alternatives ? JSON.parse(m.alternatives) : [])];
+  const opts = m.options ? JSON.parse(m.options) : null;
+  const choiceInputs = (opts?.choices || []).map((c) => c.title).concat(['', '', '', '']).slice(0, Math.max(4, opts?.choices.length || 0));
+  const el = document.createElement('div');
+  el.className = 'card'; el.dataset.id = m.id; el.dataset.h = hash(m.body);
+  el.innerHTML = `
       <div class="row">
         <b class="grow"><a href="#" data-open="${m.contact_id}">${esc(m.name || m.phone || '@' + m.instagram_username)}</a></b>
         <span class="pill">${m.channel === 'whatsapp' ? 'واتس‌اپ' : 'اینستاگرام'}</span>
@@ -197,14 +219,32 @@ async function loadQueue() {
         <span class="pill">${esc(STATUSES[m.contact_status] || m.contact_status)}</span>
       </div>
       <div class="muted">${esc(m.phone || '')}</div>
-      ${m.in_reply_to ? `<div class="quote">${esc(m.in_reply_to)}</div>` : ''}
-      <textarea>${esc(m.body)}</textarea>
+      ${m.in_reply_to ? `<div class="quote" dir="auto">${showMsg(m.in_reply_to)}</div>` : ''}
+      ${versions.length > 1 ? `<div class="alts"><span class="muted">پیشنهادهای ایجنت:</span>${versions.map((v, i) =>
+        `<button type="button" data-alt="${i}" class="${i === 0 ? 'on' : ''}">نسخهٔ ${i + 1}</button>`).join('')}</div>` : ''}
+      <textarea dir="auto">${esc(m.body)}</textarea>
+      <div class="opts ${opts ? '' : 'off'}">
+        <label class="row muted" style="gap:6px"><input type="checkbox" class="optOn" style="width:auto" ${opts ? 'checked' : ''}>
+          ارسال با گزینه‌های انتخابی (${m.channel === 'whatsapp' ? 'نظرسنجی واتس‌اپ' : 'دکمهٔ پاسخ سریع'})</label>
+        ${m.kind === 'outreach' ? `<input class="q" dir="auto" placeholder="متن بالای گزینه‌ها" value="${esc(opts?.question || '')}">` : ''}
+        <div class="choices">${choiceInputs.map((t, i) => `<input class="choice" dir="auto" placeholder="گزینهٔ ${i + 1}" value="${esc(t)}">`).join('')}</div>
+      </div>
       <div class="row" style="margin-top:8px">
         <button class="btn primary" data-act="approve">تأیید و ارسال</button>
         <button class="btn" data-act="redraft">بازنویسی</button>
         <button class="btn danger" data-act="reject">رد</button>
-      </div>
-    </div>`).join('');
+      </div>`;
+  el.querySelectorAll('[data-alt]').forEach((b) => b.onclick = () => {
+    el.querySelector('textarea').value = versions[b.dataset.alt];
+    el.querySelectorAll('[data-alt]').forEach((x) => x.classList.toggle('on', x === b));
+  });
+  el.querySelector('.optOn').onchange = (e) => el.querySelector('.opts').classList.toggle('off', !e.target.checked);
+  return el;
+}
+
+function cardOptions(card) {
+  if (!card.querySelector('.optOn').checked) return null;
+  return { question: card.querySelector('.q')?.value ?? null, choices: [...card.querySelectorAll('.choice')].map((i) => i.value) };
 }
 
 $('#queue').addEventListener('click', async (e) => {
@@ -217,7 +257,9 @@ $('#queue').addEventListener('click', async (e) => {
   btn.disabled = true;
   try {
     if (btn.dataset.act === 'approve') {
-      await api(`/messages/${id}/approve`, { method: 'POST', body: JSON.stringify({ body: card.querySelector('textarea').value }) });
+      const options = cardOptions(card);
+      if (options && options.choices.filter((c) => c.trim()).length < 2) { btn.disabled = false; return toast('حداقل دو گزینه بنویسید یا تیک گزینه‌ها را بردارید'); }
+      await api(`/messages/${id}/approve`, { method: 'POST', body: JSON.stringify({ body: card.querySelector('textarea').value, options }) });
       toast('تأیید شد؛ در صف ارسال قرار گرفت');
     } else if (btn.dataset.act === 'reject') {
       await api(`/messages/${id}/reject`, { method: 'POST' });
@@ -226,6 +268,7 @@ $('#queue').addEventListener('click', async (e) => {
       await api(`/messages/${id}/redraft`, { method: 'POST' });
     }
     card.remove();
+    queueSig = '';
     refresh();
   } catch (err) { toast(err.message); btn.disabled = false; }
 });
@@ -260,7 +303,7 @@ async function openContact(id) {
   $('#dSummary').textContent = c.ai_summary ? 'جزئیات ملک: ' + c.ai_summary : '';
   const th = $('#dThread');
   th.innerHTML = messages.filter((m) => !(m.status === 'rejected' && m.error === 'superseded')).map((m) => `
-    <div class="bubble ${m.direction}"><div class="txt">${esc(m.body)}</div>
+    <div class="bubble ${m.direction}"><div class="txt" dir="auto">${showMsg(m.body)}</div>${m.options ? `<div class="alts">${JSON.parse(m.options).choices.map((c) => `<button type="button" disabled>${esc(c.title)}</button>`).join('')}</div>` : ''}
       <div class="meta">${m.created_at}${m.direction === 'out' ? ' · ' + (MSG_STATUS[m.status] || m.status) : ''}${m.error ? ' · ' + esc(m.error) : ''}
       ${m.status === 'failed' ? ` · <a href="#" data-retry="${m.id}">ارسال دوباره</a>` : ''}</div>
     </div>`).join('') || '<p class="muted">هنوز پیامی نیست</p>';

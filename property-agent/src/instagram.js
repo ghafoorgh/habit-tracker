@@ -50,8 +50,11 @@ export async function startInstagram(app) {
         const senderId = ev.sender?.id;
         if (!senderId || senderId === myId || ev.message?.is_echo || !ev.message) continue;
         const text = ev.message.text || (ev.message.attachments ? '[پیوست / تصویر]' : '');
+        // A tapped quick reply carries payload "opt_<index>"; pass it as its number so it maps to the full option title.
+        const qr = ev.message.quick_reply?.payload;
+        const body = qr?.startsWith('opt_') ? String(Number(qr.slice(4)) + 1) : text;
         const username = await lookupUsername(senderId);
-        handleIncoming({ channel: 'instagram', instagramId: senderId, username, name: username, body: text });
+        handleIncoming({ channel: 'instagram', instagramId: senderId, username, name: username, body });
       }
     }
   });
@@ -59,11 +62,17 @@ export async function startInstagram(app) {
 
   registerChannel('instagram', {
     status: () => ({ ready: Boolean(myId) }),
-    async send(contact, text) {
+    async send(contact, text, options) {
       if (!contact.instagram_id) throw new Error('contact has no Instagram id');
+      const message = { text };
+      const titles = options?.choices?.map((c) => c.title).filter(Boolean) || [];
+      if (titles.length >= 2) {
+        // Instagram quick replies: max 13, title max 20 characters
+        message.quick_replies = titles.slice(0, 13).map((t, i) => ({ content_type: 'text', title: t.slice(0, 20), payload: `opt_${i}` }));
+      }
       await graph('/me/messages', {
         method: 'POST',
-        body: JSON.stringify({ recipient: { id: contact.instagram_id }, message: { text } }),
+        body: JSON.stringify({ recipient: { id: contact.instagram_id }, message }),
       });
     },
   });

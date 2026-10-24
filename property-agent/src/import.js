@@ -39,7 +39,9 @@ export function importBuffer(buf) {
 }
 
 function importWorkbook(wb) {
-  const rows = XLSX.utils.sheet_to_json(wb.Sheets[wb.SheetNames[0]], { defval: '', raw: false });
+  // The cleaned owner file has a ready-made "Contacts for Agent" sheet; otherwise use the first sheet.
+  const sheet = wb.SheetNames.find((n) => n.trim().toLowerCase() === 'contacts for agent') || wb.SheetNames[0];
+  const rows = XLSX.utils.sheet_to_json(wb.Sheets[sheet], { defval: '', raw: false });
   const result = { total: rows.length, created: 0, updated: 0, skipped: [] };
 
   db.transaction(() => {

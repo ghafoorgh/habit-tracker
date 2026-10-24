@@ -38,6 +38,14 @@ const REPLY_SCHEMA = {
   type: 'object',
   properties: {
     reply: { type: 'string', description: 'Exact message text to send. Empty string if no reply is needed.' },
+    alternatives: {
+      type: 'array', items: { type: 'string' },
+      description: 'Two other wordings of the same reply (different tone or length) for the agent to choose from. Empty if reply is empty.',
+    },
+    options: {
+      type: 'array', items: { type: 'string' },
+      description: 'Up to 4 short tap-to-answer choices (max 25 characters each) when the reply asks a question with obvious answers, e.g. bedroom counts, "Yes"/"No", or visit times. Empty array when free text fits better.',
+    },
     intent: {
       type: 'string',
       enum: ['for_sale', 'for_rent', 'not_interested', 'opted_out', 'question', 'unclear'],
@@ -49,14 +57,19 @@ const REPLY_SCHEMA = {
     },
     needs_human: { type: 'boolean', description: 'True if the agent should personally handle this conversation.' },
   },
-  required: ['reply', 'intent', 'property_summary', 'needs_human'],
+  required: ['reply', 'alternatives', 'options', 'intent', 'property_summary', 'needs_human'],
   additionalProperties: false,
 };
 
 const OUTREACH_SCHEMA = {
   type: 'object',
-  properties: { message: { type: 'string' } },
-  required: ['message'],
+  properties: {
+    messages: {
+      type: 'array', items: { type: 'string' },
+      description: 'Exactly 3 different versions of the first message: warm, short and direct, and formal.',
+    },
+  },
+  required: ['messages'],
   additionalProperties: false,
 };
 
@@ -91,18 +104,20 @@ function contactCard(c) {
   ].filter(Boolean).join('\n') || '(no details on file)';
 }
 
-// First WhatsApp message to a property owner from the imported list.
+// First WhatsApp message to a property owner from the imported list. Returns 3 versions; the first is the default.
 export async function draftOutreach(contact) {
   const prompt = `Write the FIRST WhatsApp message to this property owner. They have never talked to us.
-Introduce the agent briefly (from the business information), mention their property if we know the area,
-and ask politely whether they would like to sell or rent it out. Keep it under 3 short sentences, friendly,
-not salesy. End by making it easy to say no (e.g. they can reply "لغو" to stop messages).
+Write it in ${config.outreachLanguage}. Introduce the agent briefly (from the business information), mention their
+property (project/plot) if we know it, and ask whether they would like to sell or rent it out. Keep it under
+3 short sentences, friendly, not salesy. Write names in normal capitalisation (not ALL CAPS); if the name looks like a
+company, greet the company politely instead of a person. A poll with the choices sell / rent out / call me /
+not interested is sent right after your text, so end by inviting them to tap an option below (don't list the options).
 
 <contact>
 ${contactCard(contact)}
 </contact>`;
   const out = await ask([{ role: 'user', content: prompt }], OUTREACH_SCHEMA);
-  return out.message.trim();
+  return out.messages.map((m) => m.trim()).filter(Boolean);
 }
 
 // Reply to an incoming message, given the conversation so far (oldest first).
@@ -119,6 +134,7 @@ ${contactCard(contact)}
 ${transcript}
 </conversation>
 
-Write our next reply to THEM's latest message, and classify the conversation.`;
+Write our next reply to THEM's latest message, and classify the conversation.
+A line like "THEM: [selected option] I want to sell" means they tapped that choice in a poll we sent.`;
   return ask([{ role: 'user', content: prompt }], REPLY_SCHEMA);
 }
