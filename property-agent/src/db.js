@@ -43,6 +43,14 @@ CREATE INDEX IF NOT EXISTS idx_messages_contact ON messages(contact_id, id);
 CREATE INDEX IF NOT EXISTS idx_messages_status  ON messages(status);
 `);
 
+db.exec(`CREATE TABLE IF NOT EXISTS settings (key TEXT PRIMARY KEY, value TEXT)`);
+
+export const Settings = {
+  get: (key, fallback = null) => db.prepare('SELECT value FROM settings WHERE key = ?').get(key)?.value ?? fallback,
+  set: (key, value) => db.prepare(`INSERT INTO settings (key, value) VALUES (?, ?)
+      ON CONFLICT(key) DO UPDATE SET value = excluded.value`).run(key, String(value)),
+};
+
 // Columns added after the first release.
 const messageCols = db.prepare('PRAGMA table_info(messages)').all().map((c) => c.name);
 // options: JSON {question, choices:[{title, intent?}]} sent as a WhatsApp poll / Instagram quick replies
@@ -98,7 +106,11 @@ export const Contacts = {
   list({ status, q, limit = 200, offset = 0 } = {}) {
     const where = [];
     const params = { limit, offset };
-    if (status) { where.push('status = @status'); params.status = status; }
+    if (status) {
+      const list = String(status).split(',').filter(Boolean);
+      where.push(`status IN (${list.map((_, i) => `@s${i}`).join(', ')})`);
+      list.forEach((v, i) => { params[`s${i}`] = v; });
+    }
     if (q) { where.push('(name LIKE @q OR phone LIKE @q OR address LIKE @q OR instagram_username LIKE @q)'); params.q = `%${q}%`; }
     const w = where.length ? `WHERE ${where.join(' AND ')}` : '';
     return db.prepare(`SELECT c.*,
@@ -173,6 +185,24 @@ export const Messages = {
   // Replies first (people are waiting), then outreach; outreach is skipped while it is throttled.
   nextApproved: (allowOutreach) => db.prepare(`SELECT * FROM messages WHERE status = 'approved'
       AND (@allow = 1 OR kind != 'outreach') ORDER BY kind = 'outreach', id LIMIT 1`).get({ allow: allowOutreach ? 1 : 0 }),
+
+  // Per-day counts for the dashboard chart (local dates, oldest first).
+  daily(days = 14) {
+    const rows = db.prepare(`SELECT date(COALESCE(sent_at, created_at), 'localtime') AS day,
+        SUM(direction = 'out' AND status = 'sent' AND kind = 'outreach') AS outreach,
+        SUM(direction = 'out' AND status = 'sent' AND kind != 'outreach') AS replies,
+        SUM(direction = 'in') AS incoming
+      FROM messages WHERE COALESCE(sent_at, created_at) >= datetime('now', ?)
+      GROUP BY day`).all(`-${days} days`);
+    const byDay = Object.fromEntries(rows.map((r) => [r.day, r]));
+    const out = [];
+    for (let i = days - 1; i >= 0; i--) {
+      const d = new Date(Date.now() - i * 86400000);
+      const day = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
+      out.push({ day, outreach: byDay[day]?.outreach || 0, replies: byDay[day]?.replies || 0, incoming: byDay[day]?.incoming || 0 });
+    }
+    return out;
+  },
 
   outreachSentToday() {
     return db.prepare(`SELECT COUNT(*) AS n FROM messages WHERE kind = 'outreach' AND status = 'sent'

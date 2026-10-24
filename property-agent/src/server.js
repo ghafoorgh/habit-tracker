@@ -6,6 +6,7 @@ import { channelStatus } from './channels.js';
 import { draftReplyFor, generateOutreach } from './agent.js';
 import { draftOutreach } from './ai.js';
 import { importBuffer } from './import.js';
+import { prefs, OUTREACH_STYLES, LANGUAGES } from './prefs.js';
 
 function basicAuth(req, res, next) {
   if (!config.adminPassword) return next(); // only reachable from localhost in that case
@@ -54,6 +55,15 @@ export function mountAdmin(app) {
       delay: [config.minDelaySec, config.maxDelaySec],
     },
   }));
+
+  api.get('/daily', (req, res) => res.json(Messages.daily(14)));
+
+  api.get('/settings', (req, res) => res.json({
+    ...prefs.all(),
+    languages: LANGUAGES,
+    styles: Object.fromEntries(Object.entries(OUTREACH_STYLES).map(([k, v]) => [k, { label: v.label, sample: v.sample }])),
+  }));
+  api.put('/settings', (req, res) => { prefs.update(req.body || {}); res.json(prefs.all()); });
 
   api.get('/queue', (req, res) => res.json(Messages.pending()));
 

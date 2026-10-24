@@ -1,5 +1,6 @@
 import Anthropic from '@anthropic-ai/sdk';
 import { config, loadBusinessProfile } from './config.js';
+import { prefs, OUTREACH_STYLES } from './prefs.js';
 
 const client = new Anthropic();
 
@@ -66,7 +67,7 @@ const OUTREACH_SCHEMA = {
   properties: {
     messages: {
       type: 'array', items: { type: 'string' },
-      description: 'Exactly 3 different versions of the first message: warm, short and direct, and formal.',
+      description: 'Exactly 3 versions of the first message in the requested style, differing slightly in wording.',
     },
   },
   required: ['messages'],
@@ -106,12 +107,24 @@ function contactCard(c) {
 
 // First WhatsApp message to a property owner from the imported list. Returns 3 versions; the first is the default.
 export async function draftOutreach(contact) {
+  const style = OUTREACH_STYLES[prefs.outreachStyle()];
   const prompt = `Write the FIRST WhatsApp message to this property owner. They have never talked to us.
-Write it in ${config.outreachLanguage}. Introduce the agent briefly (from the business information), mention their
-property (project/plot) if we know it, and ask whether they would like to sell or rent it out. Keep it under
-3 short sentences, friendly, not salesy. Write names in normal capitalisation (not ALL CAPS); if the name looks like a
-company, greet the company politely instead of a person. A poll with the choices sell / rent out / call me /
-not interested is sent right after your text, so end by inviting them to tap an option below (don't list the options).
+Write it in ${prefs.outreachLanguage()}.
+
+Style to follow:
+${style.guide}
+
+Example in this style (for tone and length only; use the real agent details from the business information and this
+owner's real name/property, never the placeholders):
+<example>
+${style.sample}
+</example>
+
+Rules: friendly, not salesy, no claims that are not in the business information. Write names in normal capitalisation
+(not ALL CAPS); if the name looks like a company, greet the company politely; if there is no name, use a neutral greeting.
+A poll with the choices sell / rent out / call me / not interested is sent right after your text, so end by inviting them
+to tap an option below (don't list the options), then add a short line saying they can reply STOP to opt out
+(in the same language).
 
 <contact>
 ${contactCard(contact)}

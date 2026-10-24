@@ -1,8 +1,8 @@
 import { Contacts, Messages } from './db.js';
 import { draftOutreach, draftReply } from './ai.js';
-import { outreachOptions } from './config.js';
+import { outreachOptions } from './prefs.js';
 
-const OPT_OUT = /^\s*(لغو|stop|unsubscribe|مزاحم نشوید|مزاحم نشید|پیام ندهید|پیام ندید)\s*[.!]*\s*$/i;
+const OPT_OUT = /^\s*(لغو|stop|unsubscribe|مزاحم نشوید|مزاحم نشید|پیام ندهید|پیام ندید|إلغاء|الغاء|توقف)\s*[.!]*\s*$/i;
 const DRAFT_DELAY_MS = 8000; // wait for people who send several short messages in a row
 const timers = new Map();
 const INTENT_STATUS = {

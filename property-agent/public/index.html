@@ -5,138 +5,261 @@
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>پنل ایجنت املاک</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
-<link href="https://fonts.googleapis.com/css2?family=Vazirmatn:wght@400;500;700&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Vazirmatn:wght@400;500;600;700;800&display=swap" rel="stylesheet">
 <style>
   :root {
-    --bg: #f5f6f8; --card: #fff; --text: #1d2330; --muted: #6b7280; --line: #e5e7eb;
-    --accent: #0f766e; --accent-soft: #e6f4f2; --danger: #b42318; --warn: #b54708; --in: #f1f5f9; --out: #dcf3ec;
-  }
-  @media (prefers-color-scheme: dark) {
-    :root { --bg: #11151c; --card: #1a1f29; --text: #e6e8ec; --muted: #9aa3b2; --line: #2a3140;
-      --accent: #2dd4bf; --accent-soft: #123a36; --danger: #f97066; --warn: #fdb022; --in: #232a36; --out: #133b33; }
+    --bg: #0b0f17; --panel: #121826; --panel-2: #172033; --line: #232c3f; --line-2: #2d3850;
+    --text: #e7ecf5; --muted: #8b96ab; --dim: #5d6880;
+    --accent: #2dd4bf; --accent-ink: #062b27; --accent-soft: rgba(45, 212, 191, .12);
+    --gold: #f5c66b; --gold-soft: rgba(245, 198, 107, .12);
+    --blue: #60a5fa; --blue-soft: rgba(96, 165, 250, .12);
+    --red: #f87171; --red-soft: rgba(248, 113, 113, .12);
+    --violet: #a78bfa; --violet-soft: rgba(167, 139, 250, .12);
+    --radius: 14px;
   }
   * { box-sizing: border-box; }
-  body { margin: 0; font-family: Vazirmatn, Tahoma, sans-serif; background: var(--bg); color: var(--text); font-size: 15px; }
-  header { background: var(--card); border-bottom: 1px solid var(--line); padding: 12px 16px; display: flex; gap: 16px; align-items: center; flex-wrap: wrap; }
-  header h1 { font-size: 17px; margin: 0; }
-  nav { display: flex; gap: 4px; }
-  nav button { background: none; border: 0; padding: 8px 12px; border-radius: 8px; color: var(--muted); font: inherit; cursor: pointer; }
-  nav button.active { background: var(--accent-soft); color: var(--accent); font-weight: 700; }
-  .pill { font-size: 12px; padding: 2px 8px; border-radius: 99px; background: var(--line); color: var(--muted); white-space: nowrap; }
-  .pill.ok { background: var(--accent-soft); color: var(--accent); }
-  .pill.bad { background: #fde8e7; color: var(--danger); }
-  .conn { margin-inline-start: auto; display: flex; gap: 6px; flex-wrap: wrap; }
-  main { max-width: 1000px; margin: 0 auto; padding: 16px; }
-  .card { background: var(--card); border: 1px solid var(--line); border-radius: 12px; padding: 14px; margin-bottom: 12px; }
-  .row { display: flex; gap: 8px; align-items: center; flex-wrap: wrap; }
-  .grow { flex: 1; min-width: 0; }
+  html, body { height: 100%; }
+  body { margin: 0; font-family: Vazirmatn, Tahoma, sans-serif; background: var(--bg); color: var(--text); font-size: 14.5px; -webkit-font-smoothing: antialiased; }
+  a { color: inherit; }
+  button { font: inherit; color: inherit; }
+  .app { display: grid; grid-template-columns: 236px 1fr; min-height: 100vh; }
+
+  /* sidebar */
+  aside.side { background: var(--panel); border-inline-end: 1px solid var(--line); padding: 20px 14px; display: flex; flex-direction: column; gap: 6px; position: sticky; top: 0; height: 100vh; }
+  .brand { display: flex; align-items: center; gap: 10px; padding: 4px 8px 18px; }
+  .brand .logo { width: 36px; height: 36px; border-radius: 10px; background: linear-gradient(135deg, var(--accent), #0ea5e9); display: grid; place-items: center; color: var(--accent-ink); font-weight: 800; }
+  .brand b { display: block; font-size: 15px; }
+  .brand small { color: var(--muted); font-size: 12px; }
+  .nav { display: flex; align-items: center; gap: 10px; width: 100%; background: none; border: 0; padding: 10px 12px; border-radius: 10px; color: var(--muted); cursor: pointer; text-align: start; position: relative; }
+  .nav svg { width: 18px; height: 18px; flex: none; }
+  .nav:hover { background: var(--panel-2); color: var(--text); }
+  .nav.active { background: var(--accent-soft); color: var(--accent); font-weight: 600; }
+  .nav .badge { margin-inline-start: auto; background: var(--accent); color: var(--accent-ink); border-radius: 99px; font-size: 11px; font-weight: 700; padding: 1px 8px; }
+  .nav .badge:empty { display: none; }
+  .side .foot { margin-top: auto; display: grid; gap: 8px; padding: 12px 8px 0; border-top: 1px solid var(--line); }
+  .conn { display: flex; align-items: center; gap: 8px; font-size: 13px; color: var(--muted); }
+  .dot { width: 8px; height: 8px; border-radius: 50%; background: var(--red); box-shadow: 0 0 0 3px var(--red-soft); flex: none; }
+  .dot.on { background: var(--accent); box-shadow: 0 0 0 3px var(--accent-soft); }
+
+  /* main */
+  main { padding: 26px 30px 60px; min-width: 0; }
+  .top { display: flex; align-items: flex-end; justify-content: space-between; gap: 16px; margin-bottom: 22px; flex-wrap: wrap; }
+  .top h1 { margin: 0; font-size: 22px; font-weight: 700; }
+  .top p { margin: 4px 0 0; color: var(--muted); font-size: 13px; }
+  .card { background: var(--panel); border: 1px solid var(--line); border-radius: var(--radius); padding: 18px; }
+  .card h3 { margin: 0 0 4px; font-size: 15px; font-weight: 600; }
+  .card .sub { color: var(--muted); font-size: 13px; margin: 0 0 14px; }
+  .grid { display: grid; gap: 14px; }
+  .kpis { grid-template-columns: repeat(6, minmax(0, 1fr)); }
+  .kpi { background: var(--panel); border: 1px solid var(--line); border-radius: var(--radius); padding: 14px 16px; cursor: pointer; transition: border-color .15s; }
+  .kpi:hover { border-color: var(--line-2); }
+  .kpi .label { color: var(--muted); font-size: 12.5px; display: flex; align-items: center; gap: 6px; }
+  .kpi .label i { width: 8px; height: 8px; border-radius: 3px; display: inline-block; }
+  .kpi .val { font-size: 26px; font-weight: 700; margin-top: 6px; font-variant-numeric: tabular-nums; }
+  .two { grid-template-columns: 1.6fr 1fr; margin-top: 14px; }
   .muted { color: var(--muted); font-size: 13px; }
-  textarea, input, select { width: 100%; font: inherit; color: var(--text); background: var(--bg); border: 1px solid var(--line); border-radius: 8px; padding: 8px 10px; }
-  textarea { min-height: 80px; resize: vertical; line-height: 1.8; }
-  button.btn { font: inherit; border: 1px solid var(--line); background: var(--card); color: var(--text); border-radius: 8px; padding: 7px 14px; cursor: pointer; white-space: nowrap; }
-  button.primary { background: var(--accent); border-color: var(--accent); color: #fff; }
-  button.danger { color: var(--danger); }
-  button:disabled { opacity: .5; cursor: default; }
-  .quote { background: var(--in); border-radius: 8px; padding: 8px 10px; margin: 8px 0; font-size: 14px; white-space: pre-wrap; }
-  .stats { display: grid; grid-template-columns: repeat(auto-fill, minmax(130px, 1fr)); gap: 8px; }
-  .stat { background: var(--card); border: 1px solid var(--line); border-radius: 10px; padding: 10px; cursor: pointer; }
-  .stat b { display: block; font-size: 22px; }
-  table { width: 100%; border-collapse: collapse; }
-  td, th { text-align: right; padding: 8px 6px; border-bottom: 1px solid var(--line); vertical-align: top; }
-  tr.click { cursor: pointer; } tr.click:hover { background: var(--bg); }
-  .ellipsis { max-width: 260px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
-  .drawer { position: fixed; inset: 0 auto 0 0; width: min(520px, 100%); background: var(--card); border-inline-start: 1px solid var(--line); box-shadow: 0 0 30px rgba(0,0,0,.15); display: none; flex-direction: column; z-index: 10; }
-  .drawer.open { display: flex; }
-  .drawer .head { padding: 14px; border-bottom: 1px solid var(--line); }
-  .thread { flex: 1; overflow-y: auto; padding: 14px; display: flex; flex-direction: column; gap: 8px; }
-  .bubble { max-width: 85%; padding: 8px 12px; border-radius: 12px; line-height: 1.8; }
-  .bubble .txt { white-space: pre-wrap; }
-  .bubble.in { background: var(--in); align-self: flex-start; }
-  .bubble.out { background: var(--out); align-self: flex-end; }
-  .bubble .meta { font-size: 11px; color: var(--muted); margin-top: 2px; }
-  .drawer .foot { padding: 12px 14px; border-top: 1px solid var(--line); display: grid; gap: 8px; }
-  .qr img { width: 260px; max-width: 100%; background: #fff; padding: 8px; border-radius: 8px; }
-  .hidden { display: none !important; }
-  .alts { display: flex; gap: 6px; flex-wrap: wrap; margin: 8px 0 4px; }
-  .alts button { font: inherit; font-size: 13px; border: 1px solid var(--line); background: var(--bg); color: var(--text); border-radius: 99px; padding: 3px 12px; cursor: pointer; }
-  .alts button.on { background: var(--accent-soft); border-color: var(--accent); color: var(--accent); font-weight: 700; }
-  .opts { margin-top: 8px; border: 1px dashed var(--line); border-radius: 8px; padding: 8px 10px; }
-  .opts .choices { display: grid; grid-template-columns: repeat(auto-fill, minmax(170px, 1fr)); gap: 6px; margin-top: 6px; }
+  .row { display: flex; gap: 10px; align-items: center; flex-wrap: wrap; }
+  .grow { flex: 1; min-width: 0; }
+
+  /* progress + chart */
+  .progress { height: 10px; background: var(--panel-2); border-radius: 99px; overflow: hidden; margin: 10px 0 6px; }
+  .progress > div { height: 100%; background: linear-gradient(90deg, var(--accent), #0ea5e9); border-radius: 99px; transition: width .4s; }
+  .chart svg { width: 100%; height: 190px; display: block; }
+  .legend { display: flex; gap: 14px; font-size: 12px; color: var(--muted); }
+  .legend i { width: 10px; height: 10px; border-radius: 3px; display: inline-block; margin-inline-end: 5px; vertical-align: -1px; }
+  .lead { display: flex; align-items: center; gap: 10px; padding: 10px 4px; border-bottom: 1px solid var(--line); cursor: pointer; }
+  .lead:last-child { border-bottom: 0; }
+  .avatar { width: 34px; height: 34px; border-radius: 10px; background: var(--panel-2); display: grid; place-items: center; font-weight: 700; color: var(--muted); flex: none; font-size: 13px; }
+  .lead .name { font-weight: 600; font-size: 14px; }
+  .lead .meta { font-size: 12px; color: var(--muted); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+
+  /* chips / status */
+  .chip { display: inline-flex; align-items: center; gap: 5px; font-size: 12px; padding: 3px 10px; border-radius: 99px; background: var(--panel-2); color: var(--muted); white-space: nowrap; }
+  .s-for_sale { background: var(--gold-soft); color: var(--gold); }
+  .s-for_rent { background: var(--blue-soft); color: var(--blue); }
+  .s-needs_human { background: var(--violet-soft); color: var(--violet); }
+  .s-replied, .s-contacted { background: var(--accent-soft); color: var(--accent); }
+  .s-not_interested, .s-opted_out { background: var(--red-soft); color: var(--red); }
+  .filters { display: flex; gap: 6px; flex-wrap: wrap; }
+  .filters button { border: 1px solid var(--line); background: var(--panel); color: var(--muted); border-radius: 99px; padding: 5px 12px; font-size: 13px; cursor: pointer; }
+  .filters button.on { background: var(--accent-soft); color: var(--accent); border-color: transparent; font-weight: 600; }
+  .filters button b { font-weight: 700; margin-inline-start: 4px; color: var(--text); }
+
+  /* forms */
+  input, textarea, select { width: 100%; font: inherit; color: var(--text); background: var(--bg); border: 1px solid var(--line); border-radius: 10px; padding: 9px 12px; outline: none; }
+  input:focus, textarea:focus, select:focus { border-color: var(--accent); }
+  textarea { min-height: 96px; resize: vertical; line-height: 1.9; }
+  .btn { border: 1px solid var(--line-2); background: var(--panel-2); color: var(--text); border-radius: 10px; padding: 8px 16px; cursor: pointer; white-space: nowrap; font-weight: 500; }
+  .btn:hover { border-color: var(--muted); }
+  .btn.primary { background: var(--accent); border-color: var(--accent); color: var(--accent-ink); font-weight: 700; }
+  .btn.primary:hover { filter: brightness(1.08); }
+  .btn.danger { color: var(--red); }
+  .btn:disabled { opacity: .5; cursor: default; }
+
+  /* queue */
+  .qcard { background: var(--panel); border: 1px solid var(--line); border-radius: var(--radius); padding: 18px; margin-bottom: 14px; }
+  .qcard .head { display: flex; align-items: center; gap: 10px; margin-bottom: 10px; flex-wrap: wrap; }
+  .qcard .head .who { font-weight: 700; text-decoration: none; }
+  .qcard .head .who:hover { color: var(--accent); }
+  .quote { background: var(--panel-2); border-inline-start: 3px solid var(--line-2); border-radius: 8px; padding: 8px 12px; margin: 8px 0 12px; font-size: 13.5px; white-space: pre-wrap; color: #c9d2e3; }
+  .alts { display: flex; gap: 6px; flex-wrap: wrap; align-items: center; margin-bottom: 8px; }
+  .alts button { font-size: 12.5px; border: 1px solid var(--line-2); background: transparent; color: var(--muted); border-radius: 99px; padding: 3px 12px; cursor: pointer; }
+  .alts button.on { background: var(--accent-soft); color: var(--accent); border-color: transparent; font-weight: 700; }
+  .opts { margin-top: 10px; background: var(--bg); border: 1px dashed var(--line-2); border-radius: 10px; padding: 10px 12px; }
+  .opts .choices { display: grid; grid-template-columns: repeat(auto-fill, minmax(170px, 1fr)); gap: 8px; margin-top: 8px; }
   .opts.off .choices, .opts.off .q { display: none; }
-  .opts .q { margin-top: 6px; }
-  #toast { position: fixed; bottom: 16px; left: 50%; transform: translateX(-50%); background: var(--text); color: var(--bg); padding: 8px 16px; border-radius: 8px; display: none; z-index: 20; }
-  @media (max-width: 640px) { .hide-sm { display: none; } }
+  .opts .q { margin-top: 8px; }
+  .opts input { background: var(--panel); }
+  .check { display: flex; gap: 8px; align-items: center; color: var(--muted); font-size: 13px; cursor: pointer; }
+  .check input { width: auto; accent-color: var(--accent); }
+  .empty { text-align: center; padding: 48px 20px; color: var(--muted); }
+  .empty svg { width: 42px; height: 42px; color: var(--dim); margin-bottom: 8px; }
+
+  /* table */
+  .table-wrap { overflow-x: auto; margin-top: 14px; }
+  table { width: 100%; border-collapse: collapse; }
+  th { text-align: start; color: var(--dim); font-weight: 500; font-size: 12.5px; padding: 8px 10px; border-bottom: 1px solid var(--line); }
+  td { padding: 11px 10px; border-bottom: 1px solid var(--line); vertical-align: middle; }
+  tbody tr { cursor: pointer; }
+  tbody tr:hover { background: var(--panel-2); }
+  .ltr { direction: ltr; text-align: end; font-variant-numeric: tabular-nums; }
+  .ellipsis { max-width: 300px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; color: var(--muted); }
+
+  /* settings */
+  .styles { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+  .style { border: 1px solid var(--line); border-radius: 12px; padding: 14px; cursor: pointer; background: var(--bg); display: flex; flex-direction: column; gap: 10px; }
+  .style.on { border-color: var(--accent); box-shadow: 0 0 0 3px var(--accent-soft); }
+  .style .t { display: flex; align-items: center; justify-content: space-between; font-weight: 600; }
+  .bubble-prev { background: #005c4b; color: #e9fdf6; border-radius: 10px 10px 2px 10px; padding: 10px 12px; font-size: 13px; line-height: 1.75; white-space: pre-wrap; direction: ltr; text-align: left; }
+  .poll-prev { background: #1f2c34; border-radius: 10px; padding: 10px 12px; font-size: 12.5px; direction: ltr; text-align: left; color: #d1d7db; }
+  .poll-prev div { padding: 5px 0; border-top: 1px solid #2a3942; }
+  .poll-prev div:first-child { border-top: 0; font-weight: 600; color: #e9edef; }
+  .qr img { width: 240px; max-width: 100%; background: #fff; padding: 10px; border-radius: 12px; }
+  .settings-grid { grid-template-columns: 1fr 1fr; }
+
+  /* drawer */
+  .scrim { position: fixed; inset: 0; background: rgba(0, 0, 0, .5); display: none; z-index: 9; }
+  .scrim.open { display: block; }
+  .drawer { position: fixed; inset: 0 auto 0 0; width: min(500px, 100%); background: var(--panel); border-inline-start: 1px solid var(--line); display: none; flex-direction: column; z-index: 10; }
+  .drawer.open { display: flex; }
+  .drawer .dhead { padding: 18px; border-bottom: 1px solid var(--line); display: grid; gap: 10px; }
+  .thread { flex: 1; overflow-y: auto; padding: 18px; display: flex; flex-direction: column; gap: 10px; background: var(--bg); }
+  .bubble { max-width: 85%; padding: 9px 13px; border-radius: 12px; line-height: 1.85; }
+  .bubble .txt { white-space: pre-wrap; }
+  .bubble.in { background: var(--panel-2); align-self: flex-start; border-start-start-radius: 4px; }
+  .bubble.out { background: #0f3b35; align-self: flex-end; border-start-end-radius: 4px; }
+  .bubble .meta { font-size: 11px; color: var(--muted); margin-top: 3px; }
+  .bubble .alts button { cursor: default; font-size: 11.5px; }
+  .drawer .dfoot { padding: 14px 18px; border-top: 1px solid var(--line); display: grid; gap: 10px; }
+  .summary { background: var(--gold-soft); color: var(--gold); border-radius: 10px; padding: 8px 12px; font-size: 13px; }
+  .hidden { display: none !important; }
+  #toast { position: fixed; bottom: 22px; left: 50%; transform: translateX(-50%); background: var(--text); color: var(--bg); padding: 9px 18px; border-radius: 10px; display: none; z-index: 20; font-weight: 500; }
+
+  @media (max-width: 1100px) { .kpis { grid-template-columns: repeat(3, minmax(0, 1fr)); } .two, .settings-grid, .styles { grid-template-columns: 1fr; } }
+  @media (max-width: 760px) {
+    .app { grid-template-columns: 1fr; }
+    aside.side { position: fixed; inset: auto 0 0 0; height: auto; flex-direction: row; padding: 6px; z-index: 8; border-inline-end: 0; border-top: 1px solid var(--line); }
+    .brand, .side .foot { display: none; }
+    .nav { flex-direction: column; gap: 2px; font-size: 11px; padding: 6px 2px; justify-content: center; }
+    .nav .badge { position: absolute; top: 2px; inset-inline-end: 18%; margin: 0; }
+    main { padding: 18px 16px 90px; }
+    .kpis { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+    .hide-sm { display: none; }
+  }
 </style>
 </head>
 <body>
-<header>
-  <h1>ایجنت املاک</h1>
-  <nav>
-    <button data-tab="queue" class="active">صف تأیید <span id="pendingCount" class="pill">0</span></button>
-    <button data-tab="contacts">مخاطبین</button>
-    <button data-tab="setup">اتصال و دیتابیس</button>
-  </nav>
-  <div class="conn" id="conn"></div>
-</header>
+<div class="app">
+  <aside class="side">
+    <div class="brand"><div class="logo">A</div><div><b>ایجنت املاک</b><small>District One · Dubai</small></div></div>
+    <button class="nav active" data-tab="dash"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="9" rx="1.5"/><rect x="14" y="3" width="7" height="5" rx="1.5"/><rect x="14" y="12" width="7" height="9" rx="1.5"/><rect x="3" y="16" width="7" height="5" rx="1.5"/></svg>داشبورد</button>
+    <button class="nav" data-tab="queue"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 12l5 5L20 6"/></svg>صف تأیید<span class="badge" id="pendingCount"></span></button>
+    <button class="nav" data-tab="contacts"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="9" cy="8" r="3.5"/><path d="M2.5 20c.8-3.6 3.4-5.5 6.5-5.5s5.7 1.9 6.5 5.5"/><path d="M16 4.5a3.5 3.5 0 010 7M18.5 14.8c1.6.8 2.6 2.6 3 5.2"/></svg>مالکان</button>
+    <button class="nav" data-tab="settings"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"/><path d="M12 2v3M12 19v3M4.2 4.2l2.1 2.1M17.7 17.7l2.1 2.1M2 12h3M19 12h3M4.2 19.8l2.1-2.1M17.7 6.3l2.1-2.1"/></svg>تنظیمات</button>
+    <div class="foot" id="connBox"></div>
+  </aside>
 
-<main>
-  <section id="tab-queue">
-    <p class="muted" id="limitsLine"></p>
-    <div id="queue"></div>
-  </section>
-
-  <section id="tab-contacts" class="hidden">
-    <div class="stats" id="stats"></div>
-    <div class="card" style="margin-top:12px">
-      <div class="row">
-        <input id="search" class="grow" placeholder="جستجو: نام، شماره، آدرس، اینستاگرام">
-        <select id="statusFilter" style="width:auto"></select>
+  <main>
+    <!-- DASHBOARD -->
+    <section id="tab-dash">
+      <div class="top"><div><h1>داشبورد</h1><p id="todayLine"></p></div>
+        <div class="row"><button class="btn" data-goto="settings">+ وارد کردن مالکان</button><button class="btn primary" id="quickOutreach">ساخت پیام اول برای ۱۰ مالک</button></div></div>
+      <div class="grid kpis" id="kpis"></div>
+      <div class="grid two">
+        <div class="card chart">
+          <div class="row" style="margin-bottom:10px"><div class="grow"><h3>فعالیت ۱۴ روز اخیر</h3></div>
+            <div class="legend"><span><i style="background:var(--accent)"></i>پیام اول</span><span><i style="background:var(--blue)"></i>پاسخ ما</span><span><i style="background:var(--gold)"></i>پیام مالکان</span></div></div>
+          <div id="chart"></div>
+        </div>
+        <div class="card">
+          <h3>ارسال امروز</h3>
+          <p class="sub" id="limitsLine"></p>
+          <div class="progress"><div id="todayBar" style="width:0"></div></div>
+          <div class="row muted"><span class="grow" id="todayCount"></span><span id="queuedCount"></span></div>
+          <h3 style="margin-top:22px">مالکان داغ</h3>
+          <p class="sub">آخرین مالکانی که فروش، اجاره یا تماس خواسته‌اند</p>
+          <div id="leads"></div>
+        </div>
       </div>
-      <div style="overflow-x:auto"><table>
-        <thead><tr><th>نام</th><th>شماره / اینستاگرام</th><th>وضعیت</th><th class="hide-sm">جزئیات ملک</th></tr></thead>
-        <tbody id="contactsBody"></tbody>
-      </table></div>
-    </div>
-  </section>
+    </section>
 
-  <section id="tab-setup" class="hidden">
-    <div class="card">
-      <h3>واتس‌اپ</h3>
-      <div id="waBox" class="muted">در حال بررسی...</div>
-    </div>
-    <div class="card">
-      <h3>وارد کردن دیتابیس (Excel / CSV)</h3>
-      <p class="muted">ستون‌ها: <b>نام</b>، <b>شماره</b> (الزامی)، <b>آدرس</b>، <b>نوع ملک</b>، <b>توضیحات</b>. شماره‌های تکراری به‌روزرسانی می‌شوند.</p>
-      <div class="row"><input type="file" id="file" accept=".xlsx,.xls,.csv" class="grow"><button class="btn primary" id="importBtn">وارد کن</button></div>
-      <p id="importResult" class="muted"></p>
-    </div>
-    <div class="card">
-      <h3>ساخت پیام اول برای مالکان</h3>
-      <p class="muted">ایجنت برای مخاطبان «جدید» پیام اول را می‌نویسد. هیچ پیامی بدون تأیید شما در «صف تأیید» ارسال نمی‌شود.</p>
-      <div class="row"><input type="number" id="outreachCount" value="10" min="1" max="100" style="width:100px"><button class="btn primary" id="outreachBtn">ساخت پیش‌نویس</button></div>
-      <p id="outreachResult" class="muted"></p>
-    </div>
-    <div class="card">
-      <h3>خروجی</h3>
-      <a href="/api/export"><button class="btn">دانلود Excel مخاطبین و نتایج</button></a>
-    </div>
-  </section>
-</main>
+    <!-- QUEUE -->
+    <section id="tab-queue" class="hidden">
+      <div class="top"><div><h1>صف تأیید</h1><p>هیچ پیامی بدون تأیید شما ارسال نمی‌شود. نسخه را انتخاب کنید، در صورت نیاز ویرایش کنید و تأیید بزنید.</p></div></div>
+      <div id="queue"></div>
+    </section>
 
+    <!-- CONTACTS -->
+    <section id="tab-contacts" class="hidden">
+      <div class="top"><div><h1>مالکان</h1><p id="contactsLine"></p></div>
+        <div class="row"><a href="/api/export"><button class="btn">دانلود Excel</button></a></div></div>
+      <div class="card">
+        <input id="search" placeholder="جستجو: نام، شماره، پلاک، اینستاگرام" style="max-width:420px">
+        <div class="filters" id="filters" style="margin-top:12px"></div>
+        <div class="table-wrap"><table>
+          <thead><tr><th>مالک</th><th>شماره</th><th>وضعیت</th><th class="hide-sm">ملک / جزئیات</th><th class="hide-sm">آخرین پیام</th></tr></thead>
+          <tbody id="contactsBody"></tbody>
+        </table></div>
+      </div>
+    </section>
+
+    <!-- SETTINGS -->
+    <section id="tab-settings" class="hidden">
+      <div class="top"><div><h1>تنظیمات و اتصال</h1><p>اتصال واتس‌اپ، مدل پیام اول، و دیتابیس مالکان</p></div></div>
+      <div class="card">
+        <div class="row"><div class="grow"><h3>مدل پیام اول</h3><p class="sub" style="margin:0">ایجنت برای هر مالک با همین سبک، با اسم و پلاک خودش، ۳ نسخه می‌نویسد. بعد از متن، نظرسنجی ۴ گزینه‌ای می‌آید.</p></div>
+          <div style="width:160px"><select id="langSel"></select></div></div>
+        <div class="grid styles" id="styles" style="margin-top:14px"></div>
+      </div>
+      <div class="grid settings-grid" style="margin-top:14px">
+        <div class="card"><h3>واتس‌اپ</h3><p class="sub">برای اتصال، کد را با گوشی اسکن کنید: واتس‌اپ ← دستگاه‌های متصل ← اتصال دستگاه</p><div id="waBox" class="muted">در حال بررسی...</div></div>
+        <div class="card">
+          <h3>وارد کردن مالکان (Excel / CSV)</h3>
+          <p class="sub">فایل مرتب‌شده را مستقیم وارد کنید؛ شیت «Contacts for Agent» خودکار خوانده می‌شود. شماره‌های تکراری به‌روزرسانی می‌شوند.</p>
+          <div class="row"><input type="file" id="file" accept=".xlsx,.xls,.csv" class="grow"><button class="btn primary" id="importBtn">وارد کن</button></div>
+          <p id="importResult" class="muted"></p>
+          <h3 style="margin-top:18px">ساخت پیام اول</h3>
+          <p class="sub">برای مالکان «جدید» پیش‌نویس ساخته می‌شود و در صف تأیید می‌آید.</p>
+          <div class="row"><input type="number" id="outreachCount" value="10" min="1" max="100" style="width:110px"><button class="btn primary" id="outreachBtn">ساخت پیش‌نویس</button></div>
+          <p id="outreachResult" class="muted"></p>
+        </div>
+      </div>
+    </section>
+  </main>
+</div>
+
+<div class="scrim" id="scrim"></div>
 <aside class="drawer" id="drawer">
-  <div class="head">
-    <div class="row"><b id="dName" class="grow"></b><button class="btn" id="dClose">✕</button></div>
-    <div class="muted" id="dInfo"></div>
-    <div class="row" style="margin-top:8px">
-      <select id="dStatus" class="grow"></select>
-      <label class="row muted" style="gap:4px"><input type="checkbox" id="dPause" style="width:auto">خودم جواب می‌دهم (توقف ایجنت)</label>
-    </div>
-    <div class="quote hidden" id="dSummary"></div>
-    <textarea id="dNotes" placeholder="یادداشت شما (ایجنت هم می‌بیند)" style="min-height:50px;margin-top:8px"></textarea>
+  <div class="dhead">
+    <div class="row"><div class="avatar" id="dAvatar"></div><div class="grow"><b id="dName"></b><div class="muted" id="dInfo"></div></div><button class="btn" id="dClose">✕</button></div>
+    <div class="row"><select id="dStatus" class="grow"></select>
+      <label class="check"><input type="checkbox" id="dPause">خودم جواب می‌دهم</label></div>
+    <div class="summary hidden" id="dSummary"></div>
+    <textarea id="dNotes" placeholder="یادداشت شما (ایجنت هم می‌بیند)" style="min-height:52px"></textarea>
   </div>
   <div class="thread" id="dThread"></div>
-  <div class="foot">
-    <textarea id="dMsg" dir="auto" placeholder="پیام دستی شما (بدون نیاز به تأیید ارسال می‌شود)" style="min-height:60px"></textarea>
+  <div class="dfoot">
+    <textarea id="dMsg" dir="auto" placeholder="پیام دستی شما (بدون نیاز به تأیید ارسال می‌شود)" style="min-height:64px"></textarea>
     <div class="row"><button class="btn primary" id="dSend">ارسال</button><button class="btn" id="dDraft">پیش‌نویس با ایجنت</button><button class="btn" id="dSaveNotes">ذخیره یادداشت</button></div>
   </div>
 </aside>
@@ -145,8 +268,16 @@
 <script>
 const $ = (s) => document.querySelector(s);
 const esc = (s) => String(s ?? '').replace(/[&<>"']/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
+const fa = (n) => Number(n || 0).toLocaleString('fa-IR');
+// "[selected option] X" is how a tapped poll option is stored; show it readably.
+const showMsg = (t) => esc(t).replace(/^\[selected option\] /, '✅ گزینهٔ انتخاب‌شده: ');
+const hash = (t) => String([...t].reduce((a, c) => (a * 31 + c.charCodeAt(0)) | 0, 0));
+const initials = (n) => (n || '?').trim().split(/\s+/).slice(0, 2).map((w) => w[0]).join('').toUpperCase();
+const titleCase = (n) => (n || '').toLowerCase().replace(/(^|\s|-)\S/g, (c) => c.toUpperCase());
+const POLL_EN = ['I want to sell', 'I want to rent it out', 'Call me', 'Not interested'];
 let STATUSES = {};
 let current = null;
+let filter = '';
 
 async function api(path, opts = {}) {
   const res = await fetch('/api' + path, { headers: { 'Content-Type': 'application/json' }, ...opts });
@@ -154,55 +285,104 @@ async function api(path, opts = {}) {
   if (!res.ok) throw new Error(data?.error || res.statusText);
   return data;
 }
-function toast(t) { const el = $('#toast'); el.textContent = t; el.style.display = 'block'; clearTimeout(el._t); el._t = setTimeout(() => el.style.display = 'none', 2500); }
+function toast(t) { const el = $('#toast'); el.textContent = t; el.style.display = 'block'; clearTimeout(el._t); el._t = setTimeout(() => el.style.display = 'none', 2600); }
+const statusChip = (s) => `<span class="chip s-${s}">${esc(STATUSES[s] || s)}</span>`;
 
-document.querySelectorAll('nav button').forEach((b) => b.onclick = () => showTab(b.dataset.tab));
+/* ---------- navigation ---------- */
 function showTab(tab) {
-  document.querySelectorAll('nav button').forEach((b) => b.classList.toggle('active', b.dataset.tab === tab));
-  ['queue', 'contacts', 'setup'].forEach((t) => $('#tab-' + t).classList.toggle('hidden', t !== tab));
+  document.querySelectorAll('.nav').forEach((b) => b.classList.toggle('active', b.dataset.tab === tab));
+  ['dash', 'queue', 'contacts', 'settings'].forEach((t) => $('#tab-' + t).classList.toggle('hidden', t !== tab));
   if (tab === 'contacts') loadContacts();
+  if (tab === 'settings') loadSettings();
+  if (tab === 'dash') loadDash();
+  window.scrollTo(0, 0);
 }
+document.querySelectorAll('.nav').forEach((b) => b.onclick = () => showTab(b.dataset.tab));
+document.addEventListener('click', (e) => { const g = e.target.closest('[data-goto]'); if (g) showTab(g.dataset.goto); });
 
+/* ---------- status / dashboard ---------- */
 async function loadStatus() {
   const s = await api('/status');
   STATUSES = s.statuses;
-  $('#pendingCount').textContent = s.pending;
-  const conn = [];
-  for (const [name, st] of Object.entries(s.channels)) {
-    conn.push(`<span class="pill ${st.ready ? 'ok' : 'bad'}">${name === 'whatsapp' ? 'واتس‌اپ' : 'اینستاگرام'}: ${st.ready ? 'متصل' : 'قطع'}</span>`);
-  }
-  $('#conn').innerHTML = conn.join('');
-  $('#limitsLine').textContent = `پیام اول ارسال‌شده امروز: ${s.outreachSentToday} از ${s.limits.daily} · ساعت ارسال ${s.limits.hours[0]} تا ${s.limits.hours[1]} · فاصله بین پیام‌ها ${s.limits.delay[0]}–${s.limits.delay[1]} ثانیه`;
+  $('#pendingCount').textContent = s.pending ? fa(s.pending) : '';
+  const ch = s.channels;
+  $('#connBox').innerHTML = Object.keys(ch).length ? Object.entries(ch).map(([k, v]) =>
+    `<div class="conn"><span class="dot ${v.ready ? 'on' : ''}"></span>${k === 'whatsapp' ? 'واتس‌اپ' : 'اینستاگرام'} · ${v.ready ? 'متصل' : 'قطع'}</div>`).join('')
+    : '<div class="conn"><span class="dot"></span>هیچ کانالی فعال نیست</div>';
 
-  const wa = s.channels.whatsapp;
+  const wa = ch.whatsapp;
   $('#waBox').innerHTML = !wa ? 'واتس‌اپ غیرفعال است (WHATSAPP_ENABLED=false).'
-    : wa.ready ? `✅ متصل به شماره ${esc(wa.account)}`
-    : wa.qr ? `<div class="qr"><p>در گوشی: واتس‌اپ ← دستگاه‌های متصل ← اتصال دستگاه، و این کد را اسکن کنید:</p><img src="${wa.qr}"></div>`
-    : 'در حال راه‌اندازی واتس‌اپ...';
+    : wa.ready ? `<div class="conn" style="font-size:14px"><span class="dot on"></span>متصل به شمارهٔ <b class="ltr">+${esc(wa.account)}</b></div>`
+    : wa.qr ? `<div class="qr"><img src="${wa.qr}" alt="QR"></div>` : 'در حال راه‌اندازی واتس‌اپ...';
 
+  const daily = s.limits.daily;
+  $('#limitsLine').textContent = `سقف ${fa(daily)} پیام اول در روز · ساعت ${fa(s.limits.hours[0])} تا ${fa(s.limits.hours[1])} · فاصله ${fa(s.limits.delay[0])}–${fa(s.limits.delay[1])} ثانیه`;
+  $('#todayBar').style.width = Math.min(100, (s.outreachSentToday / daily) * 100) + '%';
+  $('#todayCount').textContent = `${fa(s.outreachSentToday)} از ${fa(daily)} پیام اول ارسال شد`;
+  $('#queuedCount').textContent = s.pending ? `${fa(s.pending)} در صف تأیید` : '';
   const total = Object.values(s.stats).reduce((a, b) => a + b, 0);
-  $('#stats').innerHTML = `<div class="stat" data-s=""><b>${total}</b>همه</div>` +
-    Object.entries(STATUSES).map(([k, v]) => `<div class="stat" data-s="${k}"><b>${s.stats[k] || 0}</b>${v}</div>`).join('');
-  document.querySelectorAll('.stat').forEach((el) => el.onclick = () => { $('#statusFilter').value = el.dataset.s; loadContacts(); });
-  const opts = Object.entries(STATUSES).map(([k, v]) => `<option value="${k}">${v}</option>`).join('');
-  if (!$('#statusFilter').options.length) $('#statusFilter').innerHTML = `<option value="">همه وضعیت‌ها</option>` + opts;
-  if (!$('#dStatus').options.length) $('#dStatus').innerHTML = opts;
+  $('#todayLine').textContent = `${fa(total)} مالک در دیتابیس`;
+  $('#contactsLine').textContent = `${fa(total)} مالک`;
+
+  const st = s.stats;
+  const reached = ['contacted', 'replied', 'for_sale', 'for_rent', 'not_interested', 'needs_human', 'opted_out'];
+  const kp = [
+    ['همه مالکان', total, 'var(--muted)', ''],
+    ['پیام گرفته‌اند', reached.reduce((a, k) => a + (st[k] || 0), 0), 'var(--accent)', reached.join(',')],
+    ['فروش', st.for_sale, 'var(--gold)', 'for_sale'],
+    ['اجاره', st.for_rent, 'var(--blue)', 'for_rent'],
+    ['نیاز به شما', st.needs_human, 'var(--violet)', 'needs_human'],
+    ['تمایل ندارد / لغو', (st.not_interested || 0) + (st.opted_out || 0), 'var(--red)', 'not_interested,opted_out'],
+  ];
+  $('#kpis').innerHTML = kp.map(([l, v, c, f]) => `<div class="kpi" data-filter="${f}"><div class="label"><i style="background:${c}"></i>${l}</div><div class="val">${fa(v)}</div></div>`).join('');
+  document.querySelectorAll('.kpi').forEach((el) => el.onclick = () => { filter = el.dataset.filter; showTab('contacts'); });
+  renderFilters(st, total);
+  if (!$('#dStatus').options.length) $('#dStatus').innerHTML = Object.entries(STATUSES).map(([k, v]) => `<option value="${k}">${v}</option>`).join('');
 }
 
+async function loadDash() {
+  const [daily, leads] = await Promise.all([api('/daily'), api('/contacts?status=for_sale,for_rent,needs_human')]);
+  const W = 700, H = 190, pad = 22, n = daily.length, bw = (W - pad * 2) / n;
+  const max = Math.max(4, ...daily.map((d) => Math.max(d.outreach + d.replies, d.incoming)));
+  const y = (v) => H - pad - (v / max) * (H - pad * 2);
+  let bars = '';
+  daily.forEach((d, i) => {
+    const x = pad + i * bw + bw * 0.18, w = bw * 0.3;
+    bars += `<rect x="${x}" y="${y(d.outreach)}" width="${w}" height="${H - pad - y(d.outreach)}" rx="3" fill="var(--accent)"><title>${d.day} · پیام اول: ${d.outreach}</title></rect>`;
+    bars += `<rect x="${x}" y="${y(d.outreach + d.replies)}" width="${w}" height="${y(d.outreach) - y(d.outreach + d.replies)}" rx="3" fill="var(--blue)"><title>${d.day} · پاسخ ما: ${d.replies}</title></rect>`;
+    bars += `<rect x="${x + w + 2}" y="${y(d.incoming)}" width="${w}" height="${H - pad - y(d.incoming)}" rx="3" fill="var(--gold)"><title>${d.day} · پیام مالکان: ${d.incoming}</title></rect>`;
+    if (i % 2 === 0) bars += `<text x="${x + w}" y="${H - 4}" fill="var(--dim)" font-size="10" text-anchor="middle">${d.day.slice(5).replace('-', '/')}</text>`;
+  });
+  const grid = [0.25, 0.5, 0.75, 1].map((f) => `<line x1="${pad}" x2="${W - pad}" y1="${y(max * f)}" y2="${y(max * f)}" stroke="var(--line)" stroke-dasharray="3 4"/>`).join('');
+  $('#chart').innerHTML = `<svg viewBox="0 0 ${W} ${H}" preserveAspectRatio="none" style="direction:ltr">${grid}${bars}</svg>`;
+  $('#leads').innerHTML = leads.slice(0, 7).map((c) => `
+    <div class="lead" data-open="${c.id}"><div class="avatar">${esc(initials(c.name))}</div>
+      <div class="grow" style="min-width:0"><div class="name">${esc(titleCase(c.name) || '+' + c.phone)}</div><div class="meta">${esc(c.ai_summary || c.address || '')}</div></div>
+      ${statusChip(c.status)}</div>`).join('') || '<p class="muted">هنوز مالکی اعلام آمادگی نکرده.</p>';
+}
+$('#leads').onclick = (e) => { const l = e.target.closest('[data-open]'); if (l) openContact(l.dataset.open); };
+$('#quickOutreach').onclick = async (e) => {
+  e.target.disabled = true; toast('ایجنت در حال نوشتن پیام‌ها...');
+  try { const r = await api('/outreach', { method: 'POST', body: JSON.stringify({ count: 10 }) }); toast(`${fa(r.drafted)} پیش‌نویس به صف تأیید اضافه شد`); refresh(); }
+  catch (err) { toast(err.message); }
+  e.target.disabled = false;
+};
+
+/* ---------- queue ---------- */
 let queueSig = '';
-// "[selected option] X" is how a tapped poll option is stored; show it readably.
-const showMsg = (t) => esc(t).replace(/^\[selected option\] /, '✅ گزینهٔ انتخاب‌شده: ');
-const hash = (t) => String([...t].reduce((a, c) => (a * 31 + c.charCodeAt(0)) | 0, 0));
 async function loadQueue() {
   const items = await api('/queue');
   const box = $('#queue');
   const sig = items.map((m) => m.id + ':' + hash(m.body)).join(',');
   if (sig === queueSig) return; // nothing new: keep the cards (and anything you are editing) as they are
   queueSig = sig;
-  if (!items.length) { box.innerHTML = '<div class="card muted">صف خالی است. پیام‌های جدید ایجنت اینجا برای تأیید شما می‌آیند.</div>'; return; }
+  if (!items.length) { box.innerHTML = `<div class="card empty"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M4 12l5 5L20 6"/></svg><div>صف خالی است</div><div class="muted">پیش‌نویس‌های جدید ایجنت اینجا می‌آیند.</div></div>`; return; }
   const kept = new Map([...box.querySelectorAll('[data-id]')].map((el) => [el.dataset.id, el]));
   box.innerHTML = '';
-  for (const m of items) box.appendChild(kept.get(String(m.id)) && kept.get(String(m.id)).dataset.h === hash(m.body) ? kept.get(String(m.id)) : queueCard(m));
+  for (const m of items) {
+    const old = kept.get(String(m.id));
+    box.appendChild(old && old.dataset.h === hash(m.body) ? old : queueCard(m));
+  }
 }
 
 function queueCard(m) {
@@ -210,30 +390,31 @@ function queueCard(m) {
   const opts = m.options ? JSON.parse(m.options) : null;
   const choiceInputs = (opts?.choices || []).map((c) => c.title).concat(['', '', '', '']).slice(0, Math.max(4, opts?.choices.length || 0));
   const el = document.createElement('div');
-  el.className = 'card'; el.dataset.id = m.id; el.dataset.h = hash(m.body);
+  el.className = 'qcard'; el.dataset.id = m.id; el.dataset.h = hash(m.body);
   el.innerHTML = `
-      <div class="row">
-        <b class="grow"><a href="#" data-open="${m.contact_id}">${esc(m.name || m.phone || '@' + m.instagram_username)}</a></b>
-        <span class="pill">${m.channel === 'whatsapp' ? 'واتس‌اپ' : 'اینستاگرام'}</span>
-        <span class="pill">${m.kind === 'outreach' ? 'پیام اول' : 'پاسخ'}</span>
-        <span class="pill">${esc(STATUSES[m.contact_status] || m.contact_status)}</span>
-      </div>
-      <div class="muted">${esc(m.phone || '')}</div>
-      ${m.in_reply_to ? `<div class="quote" dir="auto">${showMsg(m.in_reply_to)}</div>` : ''}
-      ${versions.length > 1 ? `<div class="alts"><span class="muted">پیشنهادهای ایجنت:</span>${versions.map((v, i) =>
-        `<button type="button" data-alt="${i}" class="${i === 0 ? 'on' : ''}">نسخهٔ ${i + 1}</button>`).join('')}</div>` : ''}
-      <textarea dir="auto">${esc(m.body)}</textarea>
-      <div class="opts ${opts ? '' : 'off'}">
-        <label class="row muted" style="gap:6px"><input type="checkbox" class="optOn" style="width:auto" ${opts ? 'checked' : ''}>
-          ارسال با گزینه‌های انتخابی (${m.channel === 'whatsapp' ? 'نظرسنجی واتس‌اپ' : 'دکمهٔ پاسخ سریع'})</label>
-        ${m.kind === 'outreach' ? `<input class="q" dir="auto" placeholder="متن بالای گزینه‌ها" value="${esc(opts?.question || '')}">` : ''}
-        <div class="choices">${choiceInputs.map((t, i) => `<input class="choice" dir="auto" placeholder="گزینهٔ ${i + 1}" value="${esc(t)}">`).join('')}</div>
-      </div>
-      <div class="row" style="margin-top:8px">
-        <button class="btn primary" data-act="approve">تأیید و ارسال</button>
-        <button class="btn" data-act="redraft">بازنویسی</button>
-        <button class="btn danger" data-act="reject">رد</button>
-      </div>`;
+    <div class="head">
+      <div class="avatar">${esc(initials(m.name))}</div>
+      <div class="grow" style="min-width:0"><a href="#" class="who" data-open="${m.contact_id}">${esc(titleCase(m.name) || (m.phone ? '+' + m.phone : '@' + m.instagram_username))}</a>
+        <div class="muted ltr" style="text-align:start">${esc(m.phone ? '+' + m.phone : '')}</div></div>
+      <span class="chip">${m.channel === 'whatsapp' ? 'واتس‌اپ' : 'اینستاگرام'}</span>
+      <span class="chip">${m.kind === 'outreach' ? 'پیام اول' : 'پاسخ'}</span>
+      ${statusChip(m.contact_status)}
+    </div>
+    ${m.in_reply_to ? `<div class="quote" dir="auto">${showMsg(m.in_reply_to)}</div>` : ''}
+    ${versions.length > 1 ? `<div class="alts"><span class="muted">نسخه‌ها:</span>${versions.map((v, i) =>
+      `<button type="button" data-alt="${i}" class="${i === 0 ? 'on' : ''}">نسخهٔ ${fa(i + 1)}</button>`).join('')}</div>` : ''}
+    <textarea dir="auto">${esc(m.body)}</textarea>
+    <div class="opts ${opts ? '' : 'off'}">
+      <label class="check"><input type="checkbox" class="optOn" ${opts ? 'checked' : ''}>
+        ارسال با گزینه‌های انتخابی (${m.channel === 'whatsapp' ? 'نظرسنجی واتس‌اپ' : 'دکمهٔ پاسخ سریع'})</label>
+      ${m.kind === 'outreach' ? `<input class="q" dir="auto" placeholder="متن بالای گزینه‌ها" value="${esc(opts?.question || '')}">` : ''}
+      <div class="choices">${choiceInputs.map((t, i) => `<input class="choice" dir="auto" placeholder="گزینهٔ ${fa(i + 1)}" value="${esc(t)}">`).join('')}</div>
+    </div>
+    <div class="row" style="margin-top:12px">
+      <button class="btn primary" data-act="approve">تأیید و ارسال</button>
+      <button class="btn" data-act="redraft">بازنویسی</button>
+      <button class="btn danger" data-act="reject">رد</button>
+    </div>`;
   el.querySelectorAll('[data-alt]').forEach((b) => b.onclick = () => {
     el.querySelector('textarea').value = versions[b.dataset.alt];
     el.querySelectorAll('[data-alt]').forEach((x) => x.classList.toggle('on', x === b));
@@ -260,7 +441,7 @@ $('#queue').addEventListener('click', async (e) => {
       const options = cardOptions(card);
       if (options && options.choices.filter((c) => c.trim()).length < 2) { btn.disabled = false; return toast('حداقل دو گزینه بنویسید یا تیک گزینه‌ها را بردارید'); }
       await api(`/messages/${id}/approve`, { method: 'POST', body: JSON.stringify({ body: card.querySelector('textarea').value, options }) });
-      toast('تأیید شد؛ در صف ارسال قرار گرفت');
+      toast('تأیید شد و در صف ارسال قرار گرفت');
     } else if (btn.dataset.act === 'reject') {
       await api(`/messages/${id}/reject`, { method: 'POST' });
     } else {
@@ -273,29 +454,40 @@ $('#queue').addEventListener('click', async (e) => {
   } catch (err) { toast(err.message); btn.disabled = false; }
 });
 
+/* ---------- contacts ---------- */
+function renderFilters(st, total) {
+  const groups = [['', 'همه', total], ['new', STATUSES.new, st.new], ['drafted', STATUSES.drafted, st.drafted], ['contacted', STATUSES.contacted, st.contacted],
+    ['replied', STATUSES.replied, st.replied], ['for_sale', STATUSES.for_sale, st.for_sale], ['for_rent', STATUSES.for_rent, st.for_rent],
+    ['needs_human', STATUSES.needs_human, st.needs_human], ['not_interested,opted_out', 'تمایل ندارد / لغو', (st.not_interested || 0) + (st.opted_out || 0)]];
+  $('#filters').innerHTML = groups.map(([k, l, n]) => `<button data-f="${k}" class="${k === filter ? 'on' : ''}">${esc(l)}<b>${fa(n)}</b></button>`).join('');
+}
+$('#filters').onclick = (e) => { const b = e.target.closest('[data-f]'); if (!b) return; filter = b.dataset.f; loadContacts(); };
+
 async function loadContacts() {
   const q = encodeURIComponent($('#search').value.trim());
-  const st = $('#statusFilter').value;
-  const rows = await api(`/contacts?q=${q}&status=${st}`);
+  const rows = await api(`/contacts?q=${q}&status=${encodeURIComponent(filter)}`);
+  document.querySelectorAll('#filters button').forEach((x) => x.classList.toggle('on', x.dataset.f === filter));
   $('#contactsBody').innerHTML = rows.map((c) => `
-    <tr class="click" data-open="${c.id}">
-      <td>${esc(c.name || '—')}${c.ai_paused ? ' <span class="pill">دستی</span>' : ''}</td>
-      <td dir="ltr" style="text-align:right">${esc(c.phone || (c.instagram_username ? '@' + c.instagram_username : ''))}</td>
-      <td><span class="pill">${esc(STATUSES[c.status] || c.status)}</span></td>
+    <tr data-open="${c.id}">
+      <td><div class="row" style="flex-wrap:nowrap"><div class="avatar">${esc(initials(c.name))}</div><div><b>${esc(titleCase(c.name) || '—')}</b>${c.ai_paused ? ' <span class="chip">دستی</span>' : ''}</div></div></td>
+      <td class="ltr">${esc(c.phone ? '+' + c.phone : (c.instagram_username ? '@' + c.instagram_username : ''))}</td>
+      <td>${statusChip(c.status)}</td>
       <td class="hide-sm ellipsis">${esc(c.ai_summary || c.address || '')}</td>
-    </tr>`).join('') || '<tr><td colspan="4" class="muted">مخاطبی پیدا نشد</td></tr>';
+      <td class="hide-sm ellipsis" dir="auto">${showMsg(c.last_message || '')}</td>
+    </tr>`).join('') || '<tr><td colspan="5" class="muted" style="text-align:center;padding:30px">مالکی پیدا نشد</td></tr>';
 }
 $('#contactsBody').onclick = (e) => { const tr = e.target.closest('[data-open]'); if (tr) openContact(tr.dataset.open); };
 let searchT; $('#search').oninput = () => { clearTimeout(searchT); searchT = setTimeout(loadContacts, 300); };
-$('#statusFilter').onchange = loadContacts;
 
+/* ---------- drawer ---------- */
 const MSG_STATUS = { pending: 'منتظر تأیید', approved: 'در صف ارسال', sending: 'در حال ارسال', sent: 'ارسال شد', rejected: 'رد شد', failed: 'ناموفق' };
 async function openContact(id) {
   const { contact: c, messages } = await api('/contacts/' + id);
   current = c;
-  $('#drawer').classList.add('open');
-  $('#dName').textContent = c.name || c.phone || '@' + c.instagram_username;
-  $('#dInfo').textContent = [c.phone, c.instagram_username && '@' + c.instagram_username, c.address, c.property_type].filter(Boolean).join(' · ');
+  $('#drawer').classList.add('open'); $('#scrim').classList.add('open');
+  $('#dAvatar').textContent = initials(c.name);
+  $('#dName').textContent = titleCase(c.name) || (c.phone ? '+' + c.phone : '@' + c.instagram_username);
+  $('#dInfo').textContent = [c.phone && '+' + c.phone, c.instagram_username && '@' + c.instagram_username, c.address, c.property_type].filter(Boolean).join(' · ');
   $('#dStatus').value = c.status;
   $('#dPause').checked = !!c.ai_paused;
   $('#dNotes').value = c.notes || '';
@@ -303,26 +495,23 @@ async function openContact(id) {
   $('#dSummary').textContent = c.ai_summary ? 'جزئیات ملک: ' + c.ai_summary : '';
   const th = $('#dThread');
   th.innerHTML = messages.filter((m) => !(m.status === 'rejected' && m.error === 'superseded')).map((m) => `
-    <div class="bubble ${m.direction}"><div class="txt" dir="auto">${showMsg(m.body)}</div>${m.options ? `<div class="alts">${JSON.parse(m.options).choices.map((c) => `<button type="button" disabled>${esc(c.title)}</button>`).join('')}</div>` : ''}
-      <div class="meta">${m.created_at}${m.direction === 'out' ? ' · ' + (MSG_STATUS[m.status] || m.status) : ''}${m.error ? ' · ' + esc(m.error) : ''}
-      ${m.status === 'failed' ? ` · <a href="#" data-retry="${m.id}">ارسال دوباره</a>` : ''}</div>
+    <div class="bubble ${m.direction}"><div class="txt" dir="auto">${showMsg(m.body)}</div>${m.options ? `<div class="alts" style="margin:6px 0 0">${JSON.parse(m.options).choices.map((o) => `<button type="button" dir="auto" disabled>${esc(o.title)}</button>`).join('')}</div>` : ''}
+      <div class="meta">${m.created_at}${m.direction === 'out' ? ' · ' + (MSG_STATUS[m.status] || m.status) : ''}${m.error ? ' · ' + esc(m.error) : ''}${m.status === 'failed' ? ` · <a href="#" data-retry="${m.id}">ارسال دوباره</a>` : ''}</div>
     </div>`).join('') || '<p class="muted">هنوز پیامی نیست</p>';
   th.scrollTop = th.scrollHeight;
 }
+function closeDrawer() { $('#drawer').classList.remove('open'); $('#scrim').classList.remove('open'); current = null; }
+$('#dClose').onclick = closeDrawer; $('#scrim').onclick = closeDrawer;
 $('#dThread').onclick = async (e) => {
-  const r = e.target.closest('[data-retry]');
-  if (!r) return;
-  e.preventDefault();
+  const r = e.target.closest('[data-retry]'); if (!r) return; e.preventDefault();
   try { await api(`/messages/${r.dataset.retry}/retry`, { method: 'POST' }); openContact(current.id); } catch (err) { toast(err.message); }
 };
-$('#dClose').onclick = () => { $('#drawer').classList.remove('open'); current = null; };
 const patch = (body) => api('/contacts/' + current.id, { method: 'PATCH', body: JSON.stringify(body) });
 $('#dStatus').onchange = async () => { await patch({ status: $('#dStatus').value }); toast('وضعیت ذخیره شد'); refresh(); };
-$('#dPause').onchange = async () => { await patch({ ai_paused: $('#dPause').checked }); toast($('#dPause').checked ? 'ایجنت برای این مخاطب متوقف شد' : 'ایجنت دوباره فعال شد'); };
+$('#dPause').onchange = async () => { await patch({ ai_paused: $('#dPause').checked }); toast($('#dPause').checked ? 'ایجنت برای این مالک متوقف شد' : 'ایجنت دوباره فعال شد'); };
 $('#dSaveNotes').onclick = async () => { await patch({ notes: $('#dNotes').value }); toast('یادداشت ذخیره شد'); };
 $('#dSend').onclick = async () => {
-  const body = $('#dMsg').value.trim();
-  if (!body) return;
+  const body = $('#dMsg').value.trim(); if (!body) return;
   try { await api(`/contacts/${current.id}/send`, { method: 'POST', body: JSON.stringify({ body }) }); $('#dMsg').value = ''; toast('در صف ارسال'); openContact(current.id); }
   catch (err) { toast(err.message); }
 };
@@ -333,6 +522,24 @@ $('#dDraft').onclick = async (e) => {
   e.target.disabled = false;
 };
 
+/* ---------- settings ---------- */
+async function loadSettings() {
+  const s = await api('/settings');
+  $('#langSel').innerHTML = s.languages.map((l) => `<option ${l === s.outreach_language ? 'selected' : ''} value="${l}">${{ English: 'انگلیسی', Persian: 'فارسی', Arabic: 'عربی' }[l]}</option>`).join('');
+  $('#styles').innerHTML = Object.entries(s.styles).map(([k, v]) => `
+    <div class="style ${k === s.outreach_style ? 'on' : ''}" data-style="${k}">
+      <div class="t"><span>${esc(v.label)}</span>${k === s.outreach_style ? '<span class="chip s-replied">انتخاب‌شده</span>' : '<span class="chip">انتخاب</span>'}</div>
+      <div class="bubble-prev">${esc(v.sample)}</div>
+      <div class="poll-prev"><div>📊 Please choose an option:</div>${POLL_EN.map((o) => `<div>○ ${o}</div>`).join('')}</div>
+    </div>`).join('');
+}
+$('#styles').onclick = async (e) => {
+  const c = e.target.closest('[data-style]'); if (!c) return;
+  await api('/settings', { method: 'PUT', body: JSON.stringify({ outreach_style: c.dataset.style }) });
+  toast('مدل پیام اول ذخیره شد'); loadSettings();
+};
+$('#langSel').onchange = async () => { await api('/settings', { method: 'PUT', body: JSON.stringify({ outreach_language: $('#langSel').value }) }); toast('زبان پیام اول ذخیره شد'); };
+
 $('#importBtn').onclick = async () => {
   const f = $('#file').files[0];
   if (!f) return toast('فایل را انتخاب کنید');
@@ -340,27 +547,30 @@ $('#importBtn').onclick = async () => {
     const res = await fetch('/api/import', { method: 'POST', body: f, headers: { 'Content-Type': 'application/octet-stream' } });
     const r = await res.json();
     if (!res.ok) throw new Error(r.error);
-    $('#importResult').innerHTML = `کل: ${r.total} · جدید: ${r.created} · به‌روزرسانی: ${r.updated} · ردشده: ${r.skipped.length}` +
+    $('#importResult').innerHTML = `کل: ${fa(r.total)} · جدید: ${fa(r.created)} · به‌روزرسانی: ${fa(r.updated)} · ردشده: ${fa(r.skipped.length)}` +
       (r.skipped.length ? '<br>' + r.skipped.slice(0, 20).map((s) => `ردیف ${s.row}: ${esc(s.reason)}`).join('<br>') : '');
     refresh();
   } catch (err) { toast(err.message); }
 };
 $('#outreachBtn').onclick = async (e) => {
   e.target.disabled = true;
-  $('#outreachResult').textContent = 'ایجنت در حال نوشتن پیام‌ها... (چند ثانیه برای هر مخاطب)';
+  $('#outreachResult').textContent = 'ایجنت در حال نوشتن پیام‌ها... (چند ثانیه برای هر مالک)';
   try {
     const r = await api('/outreach', { method: 'POST', body: JSON.stringify({ count: $('#outreachCount').value }) });
-    $('#outreachResult').textContent = `${r.drafted} پیش‌نویس ساخته شد${r.failed ? ` · ${r.failed} ناموفق` : ''}. برای تأیید به «صف تأیید» بروید.`;
+    $('#outreachResult').textContent = `${fa(r.drafted)} پیش‌نویس ساخته شد${r.failed ? ` · ${fa(r.failed)} ناموفق` : ''}. برای تأیید به «صف تأیید» بروید.`;
     refresh();
   } catch (err) { $('#outreachResult').textContent = err.message; }
   e.target.disabled = false;
 };
 
 async function refresh() {
-  try { await loadStatus(); await loadQueue(); } catch (e) { console.error(e); }
+  try {
+    await loadStatus(); await loadQueue();
+    if (!$('#tab-dash').classList.contains('hidden')) await loadDash();
+  } catch (e) { console.error(e); }
 }
 refresh();
-setInterval(refresh, 5000);
+setInterval(refresh, 6000);
 </script>
 </body>
 </html>
