@@ -1,0 +1,12 @@
+{
+  "mcpServers": {
+    "openai_advisor": {
+      "type": "stdio",
+      "command": "node",
+      "args": ["tools/openai-advisor/server.mjs"],
+      "env": {
+        "NODE_USE_ENV_PROXY": "1"
+      }
+    }
+  }
+}
