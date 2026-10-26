@@ -53,19 +53,36 @@ export function parseAdvisorRequest(body: unknown): { messages: ChatMessage[]; c
   return { messages: parsed, context: typeof context === 'string' ? context.slice(0, MAX_CONTEXT_LENGTH) : '' };
 }
 
+/** Thrown when the server rejects the access code, so the app can ask for it again. */
+export class AdvisorAccessError extends Error {}
+
+/**
+ * Checks an `Authorization: Bearer <code>` header against the server's access
+ * code. Compares every character so the response time doesn't leak how much
+ * of a guess was right.
+ */
+export function isAuthorized(header: string | null, expected: string): boolean {
+  const given = header?.startsWith('Bearer ') ? header.slice('Bearer '.length) : '';
+  if (!expected || given.length !== expected.length) return false;
+  let diff = 0;
+  for (let i = 0; i < expected.length; i++) diff |= given.charCodeAt(i) ^ expected.charCodeAt(i);
+  return diff === 0;
+}
+
 /**
  * Calls the app's own /api/advisor route, which holds the OpenAI key on the
  * server. In development the dev server serves it; for release builds set
  * EXPO_PUBLIC_API_URL to the deployed origin (e.g. https://my-app.expo.app).
  */
-export async function askAdvisor(messages: ChatMessage[], habits: Habit[]): Promise<string> {
+export async function askAdvisor(messages: ChatMessage[], habits: Habit[], accessCode: string): Promise<string> {
   const base = process.env.EXPO_PUBLIC_API_URL ?? '';
   const res = await fetch(`${base}/api/advisor`, {
     method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
+    headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${accessCode}` },
     body: JSON.stringify({ messages: messages.slice(-MAX_HISTORY), context: habitsSummary(habits) }),
   });
   const data = (await res.json().catch(() => null)) as { reply?: string; error?: string } | null;
+  if (res.status === 401) throw new AdvisorAccessError(data?.error ?? 'کد دسترسی نادرست است.');
   if (!res.ok || !data?.reply) throw new Error(data?.error ?? `HTTP ${res.status}`);
   return data.reply;
 }

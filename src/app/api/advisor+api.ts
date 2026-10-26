@@ -1,8 +1,10 @@
-import { parseAdvisorRequest } from '../../lib/advisor';
+import { isAuthorized, parseAdvisorRequest } from '../../lib/advisor.ts';
 
-// Server-only route: OPENAI_API_KEY has no EXPO_PUBLIC_ prefix, so it is never
-// bundled into the app. Set it in .env for development and as an EAS
-// environment variable for the deployed server.
+// Server-only route: OPENAI_API_KEY and ADVISOR_ACCESS_CODE have no
+// EXPO_PUBLIC_ prefix, so they are never bundled into the app. Set them in
+// .env for development and as EAS environment variables for the deployed
+// server. Without an access code the route refuses every request, so the
+// OpenAI key can't be used by anyone who merely finds the URL.
 
 const SYSTEM_PROMPT = `You are «مشاور عادت‌ها», a warm, practical habit coach inside a Persian habit-tracking app.
 Always answer in fluent, natural Persian (Farsi), using Persian digits.
@@ -16,8 +18,12 @@ User's habit data:
 
 export async function POST(request: Request): Promise<Response> {
   const apiKey = process.env.OPENAI_API_KEY;
-  if (!apiKey) {
-    return Response.json({ error: 'کلید OpenAI روی سرور تنظیم نشده است.' }, { status: 500 });
+  const accessCode = process.env.ADVISOR_ACCESS_CODE;
+  if (!apiKey || !accessCode) {
+    return Response.json({ error: 'سرور مشاور هنوز تنظیم نشده است.' }, { status: 500 });
+  }
+  if (!isAuthorized(request.headers.get('Authorization'), accessCode)) {
+    return Response.json({ error: 'کد دسترسی نادرست است.' }, { status: 401 });
   }
 
   const input = parseAdvisorRequest(await request.json().catch(() => null));

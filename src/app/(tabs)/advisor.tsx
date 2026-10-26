@@ -1,4 +1,5 @@
-import { useRef, useState } from 'react';
+import AsyncStorage from '@react-native-async-storage/async-storage';
+import { useEffect, useRef, useState } from 'react';
 import {
   ActivityIndicator,
   FlatList,
@@ -12,9 +13,13 @@ import {
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 import { Text, fontFor } from '../../components/Text';
-import { askAdvisor, MAX_MESSAGE_LENGTH, type ChatMessage } from '../../lib/advisor';
+import { AdvisorAccessError, askAdvisor, MAX_MESSAGE_LENGTH, type ChatMessage } from '../../lib/advisor';
 import { useHabits } from '../../lib/store';
 import { useTheme } from '../../lib/theme';
+
+// The personal access code the server checks (ADVISOR_ACCESS_CODE), entered
+// once and kept on this phone only.
+const CODE_KEY = 'habit-tracker/advisor-code/v1';
 
 const SUGGESTIONS = [
   'امروز روی کدام عادت تمرکز کنم؟',
@@ -31,6 +36,24 @@ export default function AdvisorScreen() {
   const [sending, setSending] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const list = useRef<FlatList<ChatMessage>>(null);
+  // undefined while loading, '' when no code has been entered yet.
+  const [code, setCode] = useState<string | undefined>(undefined);
+  const [codeDraft, setCodeDraft] = useState('');
+
+  useEffect(() => {
+    AsyncStorage.getItem(CODE_KEY)
+      .then((saved) => setCode(saved ?? ''))
+      .catch(() => setCode(''));
+  }, []);
+
+  const saveCode = () => {
+    const value = codeDraft.trim();
+    if (!value) return;
+    setCode(value);
+    setCodeDraft('');
+    setError(null);
+    AsyncStorage.setItem(CODE_KEY, value).catch(() => {});
+  };
 
   const send = async (text: string) => {
     const content = text.trim();
@@ -41,14 +64,65 @@ export default function AdvisorScreen() {
     setError(null);
     setSending(true);
     try {
-      const reply = await askAdvisor(next, habits);
+      const reply = await askAdvisor(next, habits, code ?? '');
       setMessages([...next, { role: 'assistant', content: reply }]);
     } catch (e) {
+      if (e instanceof AdvisorAccessError) {
+        setCode('');
+        setMessages(messages);
+        AsyncStorage.removeItem(CODE_KEY).catch(() => {});
+      }
       setError(e instanceof Error ? e.message : 'خطا در ارتباط با مشاور');
     } finally {
       setSending(false);
     }
   };
+
+  if (code === undefined) {
+    return (
+      <View style={[styles.center, { backgroundColor: theme.background }]}>
+        <ActivityIndicator color={theme.primary} />
+      </View>
+    );
+  }
+
+  if (!code) {
+    return (
+      <KeyboardAvoidingView
+        style={[styles.center, { backgroundColor: theme.background }]}
+        behavior={Platform.OS === 'ios' ? 'padding' : undefined}
+      >
+        <Text style={styles.bigEmoji}>🔐</Text>
+        <Text style={[styles.emptyTitle, { color: theme.text }]}>کد دسترسی مشاور</Text>
+        <Text style={[styles.emptyText, { color: theme.muted }]}>
+          مشاور فقط با کد شخصی تو کار می‌کند. کد فقط یک بار پرسیده می‌شود و روی همین گوشی می‌ماند.
+        </Text>
+        {!!error && <Text style={[styles.error, { color: theme.danger }]}>{error}</Text>}
+        <TextInput
+          value={codeDraft}
+          onChangeText={setCodeDraft}
+          onSubmitEditing={saveCode}
+          placeholder="کد دسترسی"
+          placeholderTextColor={theme.muted}
+          secureTextEntry
+          autoCapitalize="none"
+          autoCorrect={false}
+          returnKeyType="done"
+          style={[styles.input, styles.codeInput, { color: theme.text, backgroundColor: theme.card, borderColor: theme.border }]}
+        />
+        <Pressable
+          disabled={!codeDraft.trim()}
+          onPress={saveCode}
+          style={({ pressed }) => [
+            styles.send,
+            { backgroundColor: theme.primary, opacity: !codeDraft.trim() ? 0.4 : pressed ? 0.8 : 1 },
+          ]}
+        >
+          <Text style={styles.sendText}>ورود</Text>
+        </Pressable>
+      </KeyboardAvoidingView>
+    );
+  }
 
   return (
     <KeyboardAvoidingView
@@ -134,6 +208,8 @@ export default function AdvisorScreen() {
 }
 
 const styles = StyleSheet.create({
+  center: { flex: 1, alignItems: 'center', justifyContent: 'center', padding: 32, gap: 10 },
+  codeInput: { flex: 0, alignSelf: 'stretch', textAlign: 'center', borderWidth: StyleSheet.hairlineWidth },
   list: { padding: 16, gap: 10, flexGrow: 1 },
   empty: { flex: 1, alignItems: 'center', justifyContent: 'center', gap: 10, paddingVertical: 24 },
   bigEmoji: { fontSize: 52 },

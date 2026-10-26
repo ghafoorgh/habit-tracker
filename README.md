@@ -36,6 +36,8 @@ npx expo start
 
 ```bash
 OPENAI_API_KEY=sk-...
+# کد شخصی که بار اول در صفحهٔ مشاور وارد می‌کنی؛ بدون آن سرور به هیچ درخواستی جواب نمی‌دهد
+ADVISOR_ACCESS_CODE=یک-رمز-طولانی-و-تصادفی
 # اختیاری؛ پیش‌فرض gpt-5-mini
 OPENAI_MODEL=gpt-5-mini
 ```
@@ -47,13 +49,14 @@ OPENAI_MODEL=gpt-5-mini
 ```bash
 npx expo install react-native-web        # لازم برای خروجی وب/سرور
 npx eas-cli@latest env:create --name OPENAI_API_KEY --value sk-... --visibility secret --environment production
+npx eas-cli@latest env:create --name ADVISOR_ACCESS_CODE --value ... --visibility secret --environment production
 npx expo export --platform web
 npx eas-cli@latest deploy --prod
 ```
 
 آدرسی که `deploy` می‌دهد (مثلاً `https://habit-tracker.expo.app`) را به‌صورت `EXPO_PUBLIC_API_URL` برای build تنظیم کن تا برنامهٔ نصبی به همان سرور وصل شود.
 
-> مسیر `/api/advisor` عمومی است؛ هر کس آدرسش را داشته باشد می‌تواند از اعتبار OpenAI تو استفاده کند. در پنل OpenAI سقف هزینهٔ ماهانه بگذار و قبل از انتشار عمومی، محدودیت تعداد درخواست یا ورود کاربر اضافه کن.
+> مسیر `/api/advisor` فقط به درخواست‌هایی جواب می‌دهد که `ADVISOR_ACCESS_CODE` را داشته باشند. این برای نسخهٔ آزمایشی شخصی کافی است؛ برای انتشار عمومی باید ورود کاربر و محدودیت تعداد درخواست اضافه شود. در پنل OpenAI هم سقف هزینهٔ ماهانه بگذار.
 
 ## ساخت نسخهٔ نصبی
 
