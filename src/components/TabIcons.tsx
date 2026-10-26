@@ -20,7 +20,42 @@ export function StatsIcon({ color }: { color: ColorValue }) {
   );
 }
 
+export function AdvisorIcon({ color }: { color: ColorValue }) {
+  return (
+    <View style={styles.advisor}>
+      <View style={[styles.bubble, { borderColor: color }]}>
+        {[0, 1, 2].map((i) => (
+          <View key={i} style={[styles.dot, { backgroundColor: color }]} />
+        ))}
+      </View>
+      <View style={[styles.tail, { borderTopColor: color }]} />
+    </View>
+  );
+}
+
 const styles = StyleSheet.create({
+  advisor: { width: 24, height: 24, alignItems: 'center', justifyContent: 'center' },
+  bubble: {
+    width: 22,
+    height: 16,
+    borderRadius: 6,
+    borderWidth: 2,
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    gap: 2,
+  },
+  dot: { width: 3, height: 3, borderRadius: 1.5 },
+  tail: {
+    width: 0,
+    height: 0,
+    marginTop: -1,
+    borderLeftWidth: 4,
+    borderRightWidth: 4,
+    borderTopWidth: 5,
+    borderLeftColor: 'transparent',
+    borderRightColor: 'transparent',
+  },
   circle: {
     width: 24,
     height: 24,
